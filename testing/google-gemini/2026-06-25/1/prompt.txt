@@ -1,0 +1,3 @@
+the code of my new localhost-purposed php application is as follows:
+<index.php code>
+find biggest problems. don't take code formatting into account.

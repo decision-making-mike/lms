@@ -1,0 +1,43 @@
+It is great that you are building your own tools to manage your workflow! Writing a custom localhost application is a fantastic way to learn and solve your exact needs.
+
+However, looking at the logic and architecture of your PHP script, there are several critical flaws that will lead to data corruption, lost data, or application crashes. Here are the biggest problems in your code, ignoring formatting:
+
+### 1. State-Changing Actions via `GET` Requests
+
+You are using `GET` requests (via URL query parameters) for actions that modify data (`action=removal`, `action=modification-addition`).
+
+* **The Problem:** The HTTP specification dictates that `GET` requests should be *idempotent* (meaning they only retrieve data and do not change the server state). Browsers pre-fetch `GET` URLs, browser extensions crawl them, and users might accidentally refresh them. If a browser pre-fetches your "Remove" link to speed up navigation, it will silently delete your task without you ever clicking it.
+* **The Fix:** Use `POST` requests via HTML `<form method="post">` for any action that adds, modifies, or deletes a task.
+
+### 2. Format Injection (Unsanitized File Writing)
+
+You are storing tasks in a plain text file using tabs (`\t`) to separate the task and parent task, and newlines (`\n`) to separate records.
+
+* **The Problem:** You do not sanitize the user input for these specific control characters before saving. If a user creates a task named `Buy groceries	and milk` (with a tab in the middle) or presses Enter to add a newline in the input field, it will inject a new column or a new row into your text file.
+* **The Fix:** When saving user input to a delimited text file, you must strip or encode the delimiters (tabs and newlines) before calling `file_put_contents()`.
+
+### 3. Brittle Data Relationships (No Unique IDs)
+
+You are using the literal string of the "Task Name" as the primary key in your `$tasks` array (`$tasks[$task] = $parent_task;`).
+
+* **The Problem:** * **No Duplicates:** You can never have two tasks with the same name. If you add a new task with an existing name, it will silently overwrite the old one.
+* **Orphaned Children:** If you use the "MODIFY" view to rename a parent task, all of its child tasks will instantly break. Because the children are still pointing to the *old* string as their parent, they will be left hanging without a parent.
+
+
+* **The Fix:** Assign a unique identifier (like a UUID or an auto-incrementing integer) to every task. The text file should store: `ID \t Task Name \t Parent_ID`. This allows you to safely rename tasks without breaking the tree.
+
+### 4. Race Conditions (Missing File Locks)
+
+You are reading the entire file into an array, modifying the array, and then overwriting the entire file using `file_put_contents()`.
+
+* **The Problem:** If you have two browser tabs open (or two users on the local network) and you try to add or edit tasks at the exact same time, one save operation will overwrite the other. You will lose data.
+* **The Fix:** When using `file_put_contents()`, you should pass the `LOCK_EX` flag to acquire an exclusive lock on the file while writing:
+`file_put_contents($task_file_path, implode("\n", $lines), LOCK_EX);`
+
+### 5. Unsafe Array Destructuring
+
+When parsing the file, you use the following logic:
+`[$task, $parent_task] = explode("\t", $line);`
+
+* **The Problem:** If there is a blank line at the end of your text file, or if a line somehow gets saved without a tab character, `explode` will only return an array with one item. PHP will then throw an "Undefined array key 1" error, which will halt the script or corrupt your `$tasks` array.
+* **The Fix:** Always validate the structure of the data you read from a file before destructuring it. You should ensure the line is not empty and that `count(explode("\t", $line)) === 2` before assigning variables.
