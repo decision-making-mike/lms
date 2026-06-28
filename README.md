@@ -20,6 +20,10 @@ then LMS can be run like
 lynx lms
 ```
 
+## Design
+
+The user experience in LMS is optimized so LMS be used comfortably in a text-based web browser.
+
 ## Development
 
 There SHOULD be used the function `htmlspecialchars_with_ent_quotes` instead of the function `htmlspecialchars`. For details, see the description of the `htmlspecialchars_with_ent_quotes` function in the code.
