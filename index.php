@@ -143,7 +143,7 @@
                     if (
                         isset($_GET['old-task'])
                     ) {
-                        # Modification.
+                        # Modification case.
                         $query_parameters['old-task']
                             = $_GET['old-task'];
                     }
@@ -175,7 +175,7 @@
                 }
             case 'modification-addition':
                 if (isset($_GET['old-task'])) {
-                    # Modification. We assume
+                    # Modification case. We assume
                     #   that
                     #   "$tasks[$_GET['old-task']]"
                     #   is always set
@@ -576,7 +576,7 @@
                             $tasks[$_GET['task']]
                         )
                 ) {
-                    # Modification.
+                    # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
                             $tasks[$_GET['task']]
