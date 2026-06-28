@@ -11,7 +11,8 @@ The name of this project is "LMS". It is an abbreviation of the phrase "life man
 If
 
 1. there is installed the lynx browser,
-2. the web server is configured to understand the URL `lms` as a request for the file `index.php`,
+2. there is installed and running a web server,
+3. the web server is configured to understand the URL `lms` as a request for the file `index.php`,
 
 then LMS can be run like
 
