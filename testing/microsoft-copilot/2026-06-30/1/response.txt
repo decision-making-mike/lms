@@ -1,0 +1,121 @@
+I'll examine the LMS project to understand its current structure and then suggest meaningful enhancements.Now let me explore the repository structure and codebase:Based on my review of the LMS project, here's a strategic roadmap to transform it from a bare-bones task manager into a feature-rich life management system:
+
+## Current State
+Your LMS is a **minimalist, text-browser-optimized hierarchical task manager** — clean and purposeful, but underdeveloped. It stores tasks as parent-child relationships in a tab-delimited file and renders everything as plain HTML.
+
+---
+
+## High-Impact Enhancement Ideas
+
+### 1. **Rich Task Metadata** (Medium effort, high value)
+Currently tasks are just names. Add:
+- **Priority levels** (1–5, color-coded in text mode as symbols: ⓟ₁ through ⓟ₅)
+- **Due dates** (with overdue highlighting using text symbols like ⚠ or **)
+- **Tags/categories** (e.g., `#health`, `#work`, `#learning`)
+- **Time estimates** (hours or story points)
+- **Notes/descriptions** (expandable in lynx via `show-details` view)
+
+*Implementation:* Extend your TSV format: `task_name\tparent_task\tpriority\tdue_date\ttags\tnotes`
+
+---
+
+### 2. **Completion & Progress Tracking** (Low effort, solves issue #10)
+- Mark tasks as **complete/done** (show as `[✓]` or `[X]` in text browsers)
+- Calculate **child task completion percentage** (e.g., "3/7 subtasks done")
+- Archive completed tasks in a separate view instead of deleting them
+- **Burndown view**: show how many tasks you've completed this week/month
+
+*Implementation:* Add a `status` field to your TSV; add a query parameter like `view=completed-tasks`
+
+---
+
+### 3. **Dashboard & Quick Stats** (Low-to-medium effort, high engagement)
+Replace the blank "(NA)" default with:
+- **Today's focus**: Top 3 high-priority tasks due today
+- **Weekly snapshot**: "12 active tasks, 3 completed, 2 overdue"
+- **Quick filters** in the menu: `PRIORITY TASKS | DUE TODAY | OVERDUE | ALL`
+- **Search** (simple keyword lookup of task names)
+
+*Implementation:* Parse `$tasks` array server-side to compute stats; add filter query parameters
+
+---
+
+### 4. **Dark Mode & Visual Hierarchy** (Low effort, big UX win)
+- Add a **CSS stylesheet** (works in all browsers including lynx via color/bold text)
+- Use semantic HTML (`<section>`, `<nav>`) instead of `<h1>`/`<h2>`
+- **Color for text browsers**: wrap output in ANSI escape codes or use terminal symbols
+- Keyboard shortcuts (e.g., `T` = add task, `/` = search, `?` = help)
+
+*Implementation:* Link a `style.css`; conditionally serve ANSI output if user-agent is lynx
+
+---
+
+### 5. **Data Export & Sync** (Medium effort, professional polish)
+- **Export to CSV/JSON** for backup or migration
+- **Import from CSV** to seed your task list
+- **API endpoints** (REST or GraphQL) for programmatic access
+- **Local persistence improvements**: add LOCK_EX (solves issue #5), investigate cache issues (issue #7)
+
+*Implementation:* Add `?export=json|csv` routes; implement proper file locking with `LOCK_EX` flag in `file_put_contents`
+
+---
+
+### 6. **Recurring & Habit Tracking** (Medium-high effort, high value)
+- Define recurring tasks (daily, weekly, monthly)
+- Mark "habits" separately with a streak counter
+- Daily reset: tasks marked `recurring: true` auto-regenerate each day
+- **Habit view**: show your longest streaks
+
+*Implementation:* Add `recurrence` and `streak_count` fields; cron job or hourly check to regenerate tasks
+
+---
+
+### 7. **Context Switching & Focus Modes** (Low-medium effort)
+- **Work/Personal/Health** context switcher (shows only tasks in that category)
+- **Deep work mode**: hide everything except 1–3 active tasks
+- **Planning mode**: show only tasks without a parent (high-level goals)
+
+*Implementation:* Add a `context` query parameter; filter tasks in PHP before rendering
+
+---
+
+### 8. **Structured Data & Validation** (Medium effort)
+- Replace TSV with **JSON** or **YAML** for flexibility
+- Add **form validation** (duplicate task names, circular parent references, empty names)
+- Solve issue #1 (use POST for state changes) + issue #2 (validate reserved chars — already done in code!)
+
+*Implementation:* Refactor `save_tasks()` and parsing to handle JSON; add middleware validators
+
+---
+
+### 9. **Mobile-Friendly View** (Low effort)
+- Add responsive CSS for small screens
+- **Vertical stack** for forms on mobile (already works in lynx, just improve desktop UX)
+- Simplified "mobile view" with bigger buttons and less whitespace
+
+*Implementation:* Add `<meta name="viewport">` and media queries
+
+---
+
+### 10. **Collaboration & Multi-User** (High effort, future phase)
+- **User accounts** (simple: sqlite + session cookies)
+- **Shared task lists** (team projects)
+- **Comments on tasks** (lightweight Disqus-style)
+- **Audit log** (who changed what when)
+
+---
+
+## Quick Wins (Start Here)
+1. **Add task completion checkbox** (issue #10) — 30 min
+2. **Fix lynx cache issue** (issue #7) — investigate headers
+3. **Add POST support for mutations** (issue #1) — refactor forms
+4. **Add a dashboard with stats** — 1–2 hours
+5. **CSS stylesheet + ANSI colors** — 1 hour
+
+## Recommended Priority Order
+1. **Phase 1** (This week): Completion tracking + dashboard + styling
+2. **Phase 2** (Next week): Priority/tags, filters, export
+3. **Phase 3** (Optional): Recurring tasks, habit streaks
+4. **Phase 4** (Future): Multi-user, API, real database (PostgreSQL)
+
+Which of these resonates most with you? I'd recommend starting with **task completion** + **a simple dashboard** — both are low-effort, directly address your open issues, and make the tool feel less bland immediately.
