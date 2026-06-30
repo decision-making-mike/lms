@@ -174,6 +174,35 @@
                     }
                 }
             case 'modification-addition':
+                $new_task = $_GET['new-task'];
+                $new_parent_task
+                    = $_GET['new-parent-task'];
+                $reserved_character_replacements
+                    = [
+                        "\t" => '\t',
+                        "\n" => '\n'
+                    ];
+
+                # User input sanitization.
+                foreach (
+                    $reserved_character_replacements
+                        as $character
+                            => $replacement
+                ) {
+                    $new_task
+                        = str_replace(
+                            $character,
+                            $replacement,
+                            $new_task
+                        );
+                    $new_parent_task
+                        = str_replace(
+                            $character,
+                            $replacement,
+                            $new_parent_task
+                        );
+                }
+
                 if (isset($_GET['old-task'])) {
                     # Modification case. We assume
                     #   that
@@ -183,13 +212,28 @@
                     #   is set. I don't know
                     #   how to gracefully get rid
                     #   of this assumption (TODO).
-                    unset(
-                        $tasks[$_GET['old-task']]
-                    );
+
+                    $old_task = $_GET['old-task'];
+
+                    # User input sanitization.
+                    foreach (
+                        $reserved_character_replacements
+                            as $character
+                                => $replacement
+                    ) {
+                        $old_task
+                            = str_replace(
+                                $character,
+                                $replacement,
+                                $old_task
+                            );
+                    }
+
+                    unset($tasks[$old_task]);
                 }
                 # Either modification or addition.
-                $tasks[$_GET['new-task']]
-                    = $_GET['new-parent-task'];
+                $tasks[$new_task]
+                    = $new_parent_task;
 
                 save_tasks(
                     $configuration['task-file-path'],
@@ -199,8 +243,7 @@
                 set_header(
                     $base_url,
                     [
-                        'task'
-                            => $_GET['new-task']
+                        'task' => $new_task
                     ]
                 );
                 exit;
