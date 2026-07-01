@@ -1,3 +1,10 @@
+<!--
+    Tell Lynx to not use cache
+    (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
+-->
+<?php
+    header('Cache-Control: no-cache');
+?>
 <?php
     # This function has been created solely
     #   to not have to remember
