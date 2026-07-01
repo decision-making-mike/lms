@@ -203,49 +203,63 @@
                         );
                 }
 
-                if (isset($_GET['old-task'])) {
-                    # Modification case. We assume
-                    #   that
-                    #   "$tasks[$_GET['old-task']]"
-                    #   is always set
-                    #   when "$_GET['old-task']"
-                    #   is set. I don't know
-                    #   how to gracefully get rid
-                    #   of this assumption (TODO).
-
-                    $old_task = $_GET['old-task'];
-
-                    # User input sanitization.
-                    foreach (
-                        $reserved_character_replacements
-                            as $character
-                                => $replacement
+                # Check if it's an attempt
+                #   to add an existing task.
+                if (
+                    !isset($_GET['old-task'])
+                        && isset(
+                            $tasks[$new_task]
+                        )
+                ) {
+                    # Reject the addition
+                    #   (so don't change
+                    #   the view).
+                    set_header(
+                        $base_url,
+                        [
+                            'view'
+                                => 'modification-addition-form-view',
+                            'new-task'
+                                => $new_task,
+                            'new-parent-task'
+                                => $new_parent_task
+                        ]
+                    );
+                } else {
+                    # Check if it's
+                    #   the modification case.
+                    if (
+                        isset($_GET['old-task'])
                     ) {
-                        $old_task
-                            = str_replace(
-                                $character,
-                                $replacement,
-                                $old_task
-                            );
+                        # We assume
+                        #   that
+                        #   "$tasks[$_GET['old-task']]"
+                        #   is always set
+                        #   when "$_GET['old-task']"
+                        #   is set. I don't know
+                        #   how to gracefully get rid
+                        #   of this assumption (TODO).
+                        unset(
+                            $tasks[$_GET['old-task']]
+                        );
                     }
+                    # Either modification
+                    #   or addition case.
+                    $tasks[$new_task]
+                        = $new_parent_task;
 
-                    unset($tasks[$old_task]);
+                    save_tasks(
+                        $configuration['task-file-path'],
+                        $tasks
+                    );
+
+                    set_header(
+                        $base_url,
+                        [
+                            'task' => $new_task
+                        ]
+                    );
                 }
-                # Either modification or addition.
-                $tasks[$new_task]
-                    = $new_parent_task;
-
-                save_tasks(
-                    $configuration['task-file-path'],
-                    $tasks
-                );
-
-                set_header(
-                    $base_url,
-                    [
-                        'task' => $new_task
-                    ]
-                );
                 exit;
         }
     }
@@ -354,7 +368,7 @@
                             [
                                 'view'
                                     => 'modification-addition-form-view',
-                                'task'
+                                'new-task'
                                     => $parent_task
                             ]
                         );
@@ -532,6 +546,7 @@
 ?>
     <h1>
         <?php
+            # Check if it's the modification case.
             if (isset($_GET['task'])) {
                 echo
                     'Modification of "'
@@ -540,18 +555,7 @@
                         )
                         . '"';
             } else {
-                if (isset($_GET['new-task'])) {
-                    # Parent task
-                    #   addition.
-                    echo
-                        'Addition of "'
-                            . htmlspecialchars_with_ent_quotes(
-                                $_GET['new-task']
-                            )
-                            . '"';
-                } else {
-                    echo 'New task';
-                }
+                echo 'Addition';
             }
         ?>
     </h1>
@@ -563,14 +567,7 @@
         >
         <?php
             # Check if it's modification.
-            if (
-                isset($_GET['task'])
-                    # Otherwise it would be
-                    #   parent task addition.
-                    && isset(
-                        $tasks[$_GET['task']]
-                    )
-            ):
+            if (isset($_GET['task'])):
         ?>
             <input
                 type="hidden"
@@ -591,12 +588,23 @@
             id="new-task"
             name="new-task"
             value="<?php
-                # Check if it's modification
-                #   or parent task addition.
                 if (isset($_GET['task'])) {
+                    # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
                             $_GET['task']
+                        );
+                } else if (
+                    isset($_GET['new-task'])
+                ) {
+                    # Either parent task adddition
+                    #   case, or addition
+                    #   rejection case (rejection
+                    #   after attempting to add
+                    #   an existing task).
+                    echo
+                        htmlspecialchars_with_ent_quotes(
+                            $_GET['new-task']
                         );
                 }
             ?>"
@@ -611,18 +619,24 @@
             id="new-parent-task"
             name="new-parent-task"
             value="<?php
-                if (
-                    isset($_GET['task'])
-                        # Otherwise it would be
-                        #   parent task addition.
-                        && isset(
-                            $tasks[$_GET['task']]
-                        )
-                ) {
+                if (isset($_GET['task'])) {
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
                             $tasks[$_GET['task']]
+                        );
+                } else if (
+                    isset(
+                        $_GET['new-parent-task']
+                    )
+                ) {
+                    # Addition rejection case
+                    #   (rejection
+                    #   after attempting to add
+                    #   an existing task).
+                    echo
+                        htmlspecialchars_with_ent_quotes(
+                            $_GET['new-parent-task']
                         );
                 }
             ?>"
