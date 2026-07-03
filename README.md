@@ -4,6 +4,12 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 The name of this project is "LMS". It is an abbreviation of the phrase "life management software".
 
+## Deployment
+
+### Requirements
+
+1. LMS MUST be deployed on the same machine that it is to be used on. Even though it is designed to use a web server, it is not designed with network security precautions in mind.
+
 ## Usage
 
 ### Requirements
