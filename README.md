@@ -6,15 +6,21 @@ The name of this project is "LMS". It is an abbreviation of the phrase "life man
 
 ## Usage
 
+### Requirements
+
+1. A web server is running,
+2. a web browser is running,
+3. the server can read and write to the file at the path specified in the file `config.php` as the value for the key `task-file-path`,
+4. the server can read the file `index.php`.
+
 ### Example usage
 
 If
 
-1. there is installed the lynx browser,
-2. there is installed and running a web server,
-3. the web server is configured to understand the URL `lms` as a request for the file `index.php`,
+1. there is installed [the Lynx browser](https://lynx.invisible-island.net/),
+2. and the server will interpret the URL `lms` as a request for the file `index.php`,
 
-then LMS can be run like
+then LMS can be run as
 
 ```
 lynx lms
