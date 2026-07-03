@@ -34,8 +34,9 @@ lynx lms
 
 ## Design
 
-- The user experience in LMS is optimized so LMS be used comfortably in a text-based web browser.
-- LMS is to work when JavaScript is disabled, or not supported at all.
+The user experience in LMS is optimized so LMS be used comfortably in a text-based web browser.
+
+LMS is to work when JavaScript is disabled, or not supported at all.
 
 ## Development
 
