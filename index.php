@@ -43,17 +43,15 @@
         $base_url,
         $query_parameters = []
     ) {
+        $url = $base_url;
         if (count($query_parameters) !== 0) {
             $query
                 = http_build_query(
                     $query_parameters
                 );
-            header(
-                "Location: {$base_url}?{$query}"
-            );
-        } else {
-            header("Location: $base_url");
+            $url .= "?{$query}";
         }
+        header("Location: $url");
     }
 
     $configuration = require_once 'config.php';
