@@ -174,13 +174,15 @@
                         $_GET['modification-addition-cancellation-submit']
                     )
                 ) {
-                    if (isset($_GET['task'])) {
+                    if (
+                        isset($_GET['old-task'])
+                    ) {
                         # Modification case.
                         set_header(
                             $base_url,
                             [
                                 'task'
-                                    => $_GET['task']
+                                    => $_GET['old-task']
                             ]
                         );
                         exit;
