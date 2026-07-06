@@ -237,16 +237,6 @@
                     if (
                         isset($_GET['old-task'])
                     ) {
-                        # We assume
-                        #   that
-                        #   "$tasks[$_GET['old-task']]"
-                        #   is always set
-                        #   when
-                        #   "$_GET['old-task']"
-                        #   is set. I don't know
-                        #   how to gracefully get
-                        #   rid of this
-                        #   assumption (TODO).
                         unset(
                             $tasks[$_GET['old-task']]
                         );
