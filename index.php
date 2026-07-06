@@ -254,8 +254,9 @@
                         #   is always set
                         #   when "$_GET['old-task']"
                         #   is set. I don't know
-                        #   how to gracefully get rid
-                        #   of this assumption (TODO).
+                        #   how to gracefully get
+                        #   rid of this
+                        #   assumption (TODO).
                         unset(
                             $tasks[$_GET['old-task']]
                         );
@@ -302,7 +303,9 @@
         $url = "{$base_url}?{$query}";
         $all_tasks_link 
             = '<a href="'
-                . htmlspecialchars_with_ent_quotes($url)
+                . htmlspecialchars_with_ent_quotes(
+                    $url
+                )
                 . '">ALL TASKS</a>';
     }
     $query
@@ -315,7 +318,9 @@
     $url = "{$base_url}?{$query}";
     echo
         '<a href="'
-            . htmlspecialchars_with_ent_quotes($url)
+            . htmlspecialchars_with_ent_quotes(
+                $url
+            )
             . "\">ADD A TASK</a><br>{$all_tasks_link}<hr>";
 ?>
 <?php
@@ -351,9 +356,13 @@
                 $label = '(NA)';
                 echo
                     "<a href=\""
-                        . htmlspecialchars_with_ent_quotes($url)
+                        . htmlspecialchars_with_ent_quotes(
+                            $url
+                        )
                         . "\">"
-                        . htmlspecialchars_with_ent_quotes($label)
+                        . htmlspecialchars_with_ent_quotes(
+                            $label
+                        )
                         . "</a>";
             } else {
                 # This is a third-or-lower-level
@@ -364,7 +373,8 @@
                     $query
                         = http_build_query(
                             [
-                                'task' => $parent_task
+                                'task'
+                                    => $parent_task
                             ]
                         );
                     $url = "{$base_url}?{$query}";
@@ -682,7 +692,9 @@
             $url = $base_url;
             $html
                 = '<li><a href="'
-                    . htmlspecialchars_with_ent_quotes($url)
+                    . htmlspecialchars_with_ent_quotes(
+                        $url
+                    )
                     . '">(NA)</a></li>';
             foreach (
                 $tasks as $task => $parent_task
