@@ -148,22 +148,9 @@
                         $_GET['modification-addition-confirmation-submit']
                     )
                 ) {
-                    $query_parameters
-                        = [
-                            'action'
-                                => 'modification-addition',
-                            'new-task'
-                                => $_GET['new-task'],
-                            'new-parent-task'
-                                => $_GET['new-parent-task']
-                        ];
-                    if (
-                        isset($_GET['old-task'])
-                    ) {
-                        # Modification case.
-                        $query_parameters['old-task']
-                            = $_GET['old-task'];
-                    }
+                    $query_parameters = $_GET;
+                    $query_parameters['action']
+                        = 'modification-addition';
                     set_header(
                         $base_url,
                         $query_parameters
