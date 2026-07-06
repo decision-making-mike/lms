@@ -678,9 +678,10 @@
     <h1>ALL TASKS</h1>
     <ul>
         <?php
+            $url = $base_url;
             $html
                 = '<li><a href="'
-                    . htmlspecialchars_with_ent_quotes($base_url)
+                    . htmlspecialchars_with_ent_quotes($url)
                     . '">(NA)</a></li>';
             foreach (
                 $tasks as $task => $parent_task
