@@ -16,7 +16,7 @@ The name of this project is "LMS". It is an abbreviation of the phrase "life man
 
 1. A web server is running.
 2. A web browser is running.
-3. The server can read and write to the file at the path specified in the file `config.php` as the value for the key `task-file-path`.
+3. The server can read and write to the file at the path specified as the value of the server environment variable `LMS_TASK_FILE_PATH`.
 4. The server can read the file `index.php`.
 
 ### Example usage

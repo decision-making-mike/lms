@@ -1,6 +1,9 @@
 <?php
     return [
         'task-file-path'
-            => 'testing/data/tasks.txt'
+            => getenv('LMS_TASK_FILE_PATH')
+                !== false
+                ? getenv('LMS_TASK_FILE_PATH')
+                : 'testing/data/tasks.txt'
     ];
 ?>

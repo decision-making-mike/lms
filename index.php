@@ -59,17 +59,29 @@
     $configuration = require_once 'config.php';
     $base_url = "http://{$_SERVER['HTTP_HOST']}";
 
-    # Get the tasks.
-    $lines
-        = file(
-            $configuration['task-file-path'],
-            FILE_IGNORE_NEW_LINES
-        );
     $tasks = [];
-    foreach ($lines as $_ => $line) {
-        [$task, $parent_task]
-            = explode("\t", $line);
-        $tasks[$task] = $parent_task;
+    # If the task file doesn't exist, issue
+    #   an error and exit, otherwise get
+    #   the tasks.
+    if (
+        !file_exists(
+            $configuration['task-file-path']
+        )
+    ) {
+        echo
+            "Error: there does not exist a file at {$configuration['task-file-path']}";
+        exit;
+    } else {
+        $lines
+            = file(
+                $configuration['task-file-path'],
+                FILE_IGNORE_NEW_LINES
+            );
+        foreach ($lines as $_ => $line) {
+            [$task, $parent_task]
+                = explode("\t", $line);
+            $tasks[$task] = $parent_task;
+        }
     }
 
     if (isset($_GET['action'])) {
