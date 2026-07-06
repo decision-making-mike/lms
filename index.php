@@ -241,7 +241,8 @@
                         #   that
                         #   "$tasks[$_GET['old-task']]"
                         #   is always set
-                        #   when "$_GET['old-task']"
+                        #   when
+                        #   "$_GET['old-task']"
                         #   is set. I don't know
                         #   how to gracefully get
                         #   rid of this
@@ -250,7 +251,7 @@
                             $tasks[$_GET['old-task']]
                         );
                     }
-                    # Either modification
+                    # Either the modification
                     #   or addition case.
                     $tasks[$new_task]
                         = $new_parent_task;
