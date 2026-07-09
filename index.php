@@ -500,7 +500,7 @@
     <h1>
         <?php
             echo
-                'Removal of "'
+                'REMOVAL OF "'
                     . htmlspecialchars_with_ent_quotes(
                         $_GET['task']
                     )
@@ -534,14 +534,14 @@
                 <input
                     type="submit"
                     name="removal-confirmation-submit"
-                    value="Yes"
+                    value="YES"
                 >
             </li>
             <li>
                 <input
                     type="submit"
                     name="removal-cancellation-submit"
-                    value="No"
+                    value="NO"
                 >
             </li>
         </ul>
@@ -557,13 +557,13 @@
             # Check if it's the modification case.
             if (isset($_GET['task'])) {
                 echo
-                    'Modification of "'
+                    'MODIFICATION OF "'
                         . htmlspecialchars_with_ent_quotes(
                             $_GET['task']
                         )
                         . '"';
             } else {
-                echo 'Addition';
+                echo 'ADDITION';
             }
         ?>
     </h1>
