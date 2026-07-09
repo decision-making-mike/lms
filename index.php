@@ -328,7 +328,7 @@
                 && $_GET['task'] !== '(NA)'
         ) {
             $parent_task = $tasks[$_GET['task']];
-            if ($parent_task === '') {
+            if ($parent_task === '(NA)') {
                 # This is a second-level task,
                 #   so we don't include the "task"
                 #   parameter in the query. This
@@ -404,9 +404,10 @@
         #   as an unset task in the code
         #   and the URL. But the occurrences
         #   of its name in the file are
-        #   represented there as empty strings.
+        #   represented there as "(NA)".
         #   Here we unify these representations.
-        $task = $_GET['task'] ?? '';
+        $task = $_GET['task'] ?? '(NA)';
+
         $child_tasks
             = array_filter(
                 $tasks,
@@ -689,7 +690,7 @@
                 # Check if there is no task
                 #   with the parent task name.
                 if (
-                    $parent_task !== ''
+                    $parent_task !== '(NA)'
                         && !isset(
                             $tasks[$parent_task]
                         )

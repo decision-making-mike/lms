@@ -1,4 +1,4 @@
 pen buying	book introduction writing
 book introduction writing	book writing
 book writing	fame and wealth obtaining
-fame and wealth obtaining	
+fame and wealth obtaining	(NA)
