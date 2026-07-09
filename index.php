@@ -323,7 +323,10 @@
     </h1>
     <h2>PARENT TASK</h2>
     <?php
-        if (isset($_GET['task'])) {
+        if (
+            isset($_GET['task'])
+                && $_GET['task'] !== '(NA)'
+        ) {
             $parent_task = $tasks[$_GET['task']];
             if ($parent_task === '') {
                 # This is a second-level task,
@@ -436,7 +439,10 @@
     ?>
     <h2>ACTIONS</h2>
     <?php
-        if (isset($_GET['task'])):
+        if (
+            isset($_GET['task'])
+                && $_GET['task'] !== '(NA)'
+        ):
     ?>
         <ul>
             <li>
