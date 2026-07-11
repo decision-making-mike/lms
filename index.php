@@ -240,6 +240,23 @@
                         unset(
                             $tasks[$_GET['old-task']]
                         );
+                        # Modify the references
+                        #   of the name
+                        #   of the task as parent
+                        #   task names.
+                        foreach (
+                            $tasks
+                                as $task
+                                    => $parent_task
+                        ) {
+                            if (
+                                $parent_task
+                                    === $_GET['old-task']
+                            ) {
+                                $tasks[$task]
+                                    = $new_task;
+                            }
+                        }
                     }
                     # Either the modification
                     #   or addition case.
