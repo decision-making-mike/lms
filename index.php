@@ -283,6 +283,20 @@
 <!--
     Menu.
 -->
+<form action="get">
+    <input
+        type="hidden"
+        name="view"
+        value="search-result-view"
+    >
+    <input name="target-task">
+    <br>
+    <input
+        type="submit"
+        name="search-submit"
+        value="SEARCH"
+    >
+</form>
 <?php
     $all_tasks_link_link = '';
     if (
@@ -515,6 +529,51 @@
     <?php
         endif;
     ?>
+<?php
+    elseif (
+        $_GET['view'] === 'search-result-view'
+    ):
+?>
+<h1>SEARCH RESULT FOR "<?php
+    echo $_GET['target-task']
+?>"</h1>
+<?php
+    $search_result_tasks
+        = array_filter(
+            $tasks,
+            fn ($task) =>
+                strpos(
+                    strtolower($task),
+                    strtolower(
+                        $_GET['target-task']
+                    )
+                ) !== false,
+            ARRAY_FILTER_USE_KEY
+        );
+    $html = '';
+    if (count($search_result_tasks) > 0) {
+        foreach (
+            $search_result_tasks as $task => $_
+        ) {
+            $query
+                = http_build_query(
+                    [
+                        'task' => $task
+                    ]
+                );
+            $url = "{$base_url}?{$query}";
+            $html
+                .= "<li><a href=\"{$url}\">"
+                    . htmlspecialchars_with_ent_quotes(
+                        $task
+                    )
+                    . '</a></li>';
+        }
+        echo "<ul>{$html}</ul>";
+    } else {
+        echo '(NA)';
+    }
+?>
 <?php
     elseif (
         $_GET['view']
