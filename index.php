@@ -538,23 +538,40 @@
     echo $_GET['target-task']
 ?>"</h1>
 <?php
-    $search_result_tasks
-        = array_filter(
-            $tasks,
-            fn ($task) =>
-                strpos(
-                    strtolower($task),
-                    strtolower(
-                        $_GET['target-task']
-                    )
-                ) !== false,
-            ARRAY_FILTER_USE_KEY
-        );
-    $html = '';
-    if (count($search_result_tasks) > 0) {
-        foreach (
-            $search_result_tasks as $task => $_
+    $search_result = [];
+    # This "if" has been created solely to prevent
+    #   the PHP warning about the needle being
+    #   empty.
+    if ($_GET['target-task'] !== '') {
+        $search_result
+            = array_keys(
+                array_filter(
+                    $tasks,
+                    fn ($task) =>
+                        strpos(
+                            strtolower($task),
+                            strtolower(
+                                $_GET['target-task']
+                            )
+                        ) !== false,
+                    ARRAY_FILTER_USE_KEY
+                )
+            );
+        # Check the task '(NA)', too (it's not
+        #   in the task file, so we need to check
+        #   it separately).
+        if (
+            strpos(
+                '(na)',
+                strtolower($_GET['target-task'])
+            ) !== false
         ) {
+            $search_result[] = '(NA)';
+        }
+    }
+    $html = '';
+    if (count($search_result) > 0) {
+        foreach ($search_result as $_ => $task) {
             $query
                 = http_build_query(
                     [
