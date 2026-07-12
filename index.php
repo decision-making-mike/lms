@@ -535,7 +535,7 @@
     ):
 ?>
 <h1>SEARCH RESULT FOR "<?php
-    echo $_GET['target-task']
+    echo $_GET['target-task'];
 ?>"</h1>
 <?php
     $search_result = [];
