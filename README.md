@@ -40,6 +40,8 @@ The user experience in LMS is optimized so LMS be used comfortably in a text-bas
 
 LMS is to work when JavaScript is disabled, or not supported at all.
 
+All the navigation should be achievable through visible interface elements. It means that all keyboard shortcuts (if there be any) are to result in operations corresponding to operations in which such elements result. This is to simplify LMS usage.
+
 ### User API
 
 This is the definition of the user API (it is called "public API" by the [Semantic Versioning](https://semver.org/) specification). This definition is intended to:
