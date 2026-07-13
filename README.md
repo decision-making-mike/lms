@@ -69,7 +69,6 @@ This is the definition of the user API (it is called "public API" by the [Semant
         - the task file. The user can specify its path,
         - the example task file. Its path is `testing/data/tasks.txt`,
         - the configuration file. Its path is `config.php`.
-- This API.
 
 ## Development
 
