@@ -54,7 +54,8 @@ This is the definition of the user API (it is called "public API" by the [Semant
         - task addition. It involves specifying the name and parent task of a task, and saving them to the task file,
         - task modification. It involves modifying the name, or (and) the name of the parent task of a task, and saving it (them) to the task file,
         - task removal. It involves specifying the name of the task to remove, and removal confirmation,
-    - task `(NA)` can not be modified, or removed.
+        - task searching. It involves specifying the name of the task to search for, or part of it,
+    - task `(NA)` can not be modified, removed, or found by searching.
 - As for data presentation:
     - there are the following views:
         - the default view. It shows a task,
