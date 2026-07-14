@@ -537,14 +537,14 @@
                     );
                 $url = "{$base_url}?{$query}";
             ?>
-            (<a
+            <a
                 href="<?php
                     echo
                         htmlspecialchars_with_ent_quotes(
                             $url
                         );
                 ?>"
-            >ADD A CHILD TASK</a>)
+            >ADD A CHILD TASK</a>
         </li>
     </ul>
 <?php
