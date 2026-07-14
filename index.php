@@ -283,7 +283,7 @@
 <!--
     Menu.
 -->
-<form action="get">
+<form method="get">
     <input
         type="hidden"
         name="view"
