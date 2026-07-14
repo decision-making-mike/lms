@@ -45,8 +45,8 @@ All the navigation should be achievable through visible interface elements. It m
 ### User API
 
 This is the definition of the user API (it is called "public API" by the [Semantic Versioning](https://semver.org/) specification). This definition is intended to:
-- facilitate for the developer to determine whether there should be released a new major, minor, or patch version of LMS given the changes they have made,
-- facilitate for the user to determine what changes they should expect when there has been released a major, minor, or patch version of LMS.
+- facilitate for the developer of LMS to determine whether there should be released a new major, minor, or patch version of LMS given the changes they have made,
+- facilitate for the user of LMS to determine what changes they should expect when there has been released a major, minor, or patch version of LMS.
 
 - As for the data model:
     - there are tasks. A task is a key-value pair. The key represents the name of the task. The value represents the name of another task, called the parent task of the task.
@@ -69,7 +69,6 @@ This is the definition of the user API (it is called "public API" by the [Semant
         - the task file. The user can specify its path,
         - the example task file. Its path is `testing/data/tasks.txt`,
         - the configuration file. Its path is `config.php`.
-- (Deprecated) This API.
 
 ## Development
 
