@@ -470,13 +470,13 @@
         }
     ?>
     <h2>ACTIONS</h2>
-    <?php
-        if (
-            isset($_GET['task'])
-                && $_GET['task'] !== '(NA)'
-        ):
-    ?>
-        <ul>
+    <ul>
+        <?php
+            if (
+                isset($_GET['task'])
+                    && $_GET['task'] !== '(NA)'
+            ):
+        ?>
             <li>
                 <?php
                     $query
@@ -521,14 +521,32 @@
                     ?>"
                 >REMOVE</a>
             </li>
-        </ul>
-    <?php
-        else:
-    ?>
-        (NA)
-    <?php
-        endif;
-    ?>
+        <?php
+            endif;
+        ?>
+        <li>
+            <?php
+                $query
+                    = http_build_query(
+                        [
+                            'view'
+                                => 'modification-addition-form-view',
+                            'new-parent-task'
+                                => $_GET['task'] ?? '(NA)'
+                        ]
+                    );
+                $url = "{$base_url}?{$query}";
+            ?>
+            (<a
+                href="<?php
+                    echo
+                        htmlspecialchars_with_ent_quotes(
+                            $url
+                        );
+                ?>"
+            >ADD A CHILD TASK</a>)
+        </li>
+    </ul>
 <?php
     elseif (
         $_GET['view'] === 'search-result-view'
