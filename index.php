@@ -340,7 +340,6 @@
 </form>
 <!-- Menu links. -->
 <?php
-    $all_tasks_link_link = '';
     if (
         isset($_GET['view'])
             && $_GET['view'] === 'all-task-view'
