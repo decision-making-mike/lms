@@ -85,7 +85,7 @@
                 $configuration['task-file-path'],
                 FILE_IGNORE_NEW_LINES
             );
-        foreach ($lines as $_ => $line) {
+        foreach ($lines as $line) {
             $fields = explode("\t", $line);
             $task = $fields[0];
             $details = array_slice($fields, 1);
@@ -634,7 +634,7 @@
     }
     $html = '';
     if (count($search_result) > 0) {
-        foreach ($search_result as $_ => $task) {
+        foreach ($search_result as $task) {
             $query
                 = http_build_query(
                     [
