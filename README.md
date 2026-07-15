@@ -38,9 +38,9 @@ lynx lms
 
 The user experience in LMS is optimized so LMS be used comfortably in a text-based web browser.
 
-LMS is to work when JavaScript is disabled, or not supported at all.
+LMS MUST work when JavaScript is disabled, or not supported at all.
 
-All the navigation should be achievable through visible interface elements. It means that all keyboard shortcuts (if there be any) are to result in operations corresponding to operations in which such elements result. This is to simplify LMS usage.
+Navigation MUST be achievable through visible interface elements. It means that keyboard shortcuts (if there be any) MUST result in operations corresponding to operations in which such elements result. This is to simplify LMS usage.
 
 ### User API
 
