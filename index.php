@@ -117,6 +117,7 @@
         }
     }
 
+    # Action handling.
     if (isset($_GET['action'])) {
         switch ($_GET['action']) {
             case 'removal-decision':
@@ -322,6 +323,7 @@
 ?>
 <!doctype html>
 <!-- Menu. -->
+<!-- Search form. -->
 <form method="get">
     <input
         type="hidden"
@@ -336,6 +338,7 @@
         value="SEARCH"
     >
 </form>
+<!-- Menu links. -->
 <?php
     $all_tasks_link_link = '';
     if (
@@ -373,6 +376,7 @@
             )
             . "\">ADD A TASK</a><br>{$all_tasks_link}<hr>";
 ?>
+<!-- View handling. -->
 <?php if (!isset($_GET['view'])): ?>
     <!-- Task view (default view). -->
     <h1>
