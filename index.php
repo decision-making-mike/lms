@@ -740,7 +740,7 @@
             value="modification-addition-decision"
         >
         <?php
-            # Check if it's modification.
+            # Check if it's the modification case.
             if (isset($_GET['task'])):
         ?>
             <input
