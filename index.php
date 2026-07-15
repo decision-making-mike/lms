@@ -2,9 +2,7 @@
     Tell Lynx to not use cache
     (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
 -->
-<?php
-    header('Cache-Control: no-cache');
-?>
+<?php header('Cache-Control: no-cache'); ?>
 <?php
     # This function has been created solely
     #   to not have to remember
@@ -323,9 +321,7 @@
     }
 ?>
 <!doctype html>
-<!--
-    Menu.
--->
+<!-- Menu. -->
 <form method="get">
     <input
         type="hidden"
@@ -377,12 +373,8 @@
             )
             . "\">ADD A TASK</a><br>{$all_tasks_link}<hr>";
 ?>
-<?php
-    if (!isset($_GET['view'])):
-?>
-    <!--
-        Default view.
-    -->
+<?php if (!isset($_GET['view'])): ?>
+    <!-- Task view (default view). -->
     <h1>
         <?php
             if (isset($_GET['task'])) {
@@ -575,9 +567,7 @@
                     ?>"
                 >REMOVE</a>
             </li>
-        <?php
-            endif;
-        ?>
+        <?php endif; ?>
         <li>
             <?php
                 $query
@@ -623,9 +613,7 @@
                 '(na)',
                 strtolower($_GET['target-task'])
             ) !== false
-        ) {
-            $search_result[] = '(NA)';
-        }
+        ) $search_result[] = '(NA)';
         $search_result
             = array_merge(
                 $search_result,
@@ -762,9 +750,7 @@
                         );
                 ?>"
             >
-        <?php
-            endif;
-        ?>
+        <?php endif; ?>
         <label for="new-task">TASK</label>
         <br>
         <input
@@ -931,6 +917,4 @@
             echo $html;
         ?>
     </ul>
-<?php
-    endif;
-?>
+<?php endif; ?>
