@@ -23,10 +23,15 @@
         $tasks
     ) {
         $lines = [];
-        foreach (
-            $tasks as $task => $parent_task
-        ) {
-            $line = $task . "\t" . $parent_task;
+        foreach ($tasks as $task => $details) {
+            $line
+                = implode(
+                    "\t",
+                    [
+                        $task,
+                        ...$details
+                    ]
+                );
             $lines[] = $line;
         }
         file_put_contents(
@@ -70,15 +75,47 @@
             "Error: there does not exist a file at {$configuration['task-file-path']}";
         exit;
     } else {
+        # Transition from the old format
+        #   of the task file (without task
+        #   statuses) to the new one (with task
+        #   statuses). Code to be removed
+        #   upon releasing version 5.0.0.
+        $old = false;
+
         $lines
             = file(
                 $configuration['task-file-path'],
                 FILE_IGNORE_NEW_LINES
             );
         foreach ($lines as $_ => $line) {
-            [$task, $parent_task]
-                = explode("\t", $line);
-            $tasks[$task] = $parent_task;
+            $fields = explode("\t", $line);
+            $task = $fields[0];
+            $details = array_slice($fields, 1);
+
+            # Transition from the old format
+            #   of the task file (without task
+            #   statuses) to the new one
+            #   (with task statuses). Code to be
+            #   removed upon releasing version
+            #   5.0.0.
+            if (count($details) === 1) {
+                $details[1] = '(NA)';
+                $old = true;
+            }
+
+            $tasks[$task] = $details;
+        }
+
+        # Transition from the old format
+        #   of the task file (without task
+        #   statuses) to the new one (with task
+        #   statuses). Code to be removed
+        #   upon releasing version 5.0.0.
+        if ($old) {
+            save_tasks(
+                $configuration['task-file-path'],
+                $tasks
+            );
         }
     }
 
@@ -183,6 +220,7 @@
                 $new_task = $_GET['new-task'];
                 $new_parent_task
                     = $_GET['new-parent-task'];
+                $new_status = $_GET['new-status'];
                 $reserved_character_replacements
                     = [
                         "\t" => '\t',
@@ -228,7 +266,9 @@
                             'new-task'
                                 => $new_task,
                             'new-parent-task'
-                                => $new_parent_task
+                                => $new_parent_task,
+                            'new-status'
+                                => $new_status
                         ]
                     );
                 } else {
@@ -247,13 +287,13 @@
                         foreach (
                             $tasks
                                 as $task
-                                    => $parent_task
+                                    => $details
                         ) {
                             if (
-                                $parent_task
+                                $details[0]
                                     === $_GET['old-task']
                             ) {
-                                $tasks[$task]
+                                $tasks[$task][0]
                                     = $new_task;
                             }
                         }
@@ -261,7 +301,10 @@
                     # Either the modification
                     #   or addition case.
                     $tasks[$new_task]
-                        = $new_parent_task;
+                        = [
+                            $new_parent_task,
+                            $new_status
+                        ];
 
                     save_tasks(
                         $configuration['task-file-path'],
@@ -352,13 +395,24 @@
             }
         ?>
     </h1>
+    <h2>STATUS</h2>
+    <?php
+        if (
+            isset($_GET['task'])
+        ) {
+            echo $tasks[$_GET['task']][1];
+        } else {
+            echo '(NA)';
+        }
+    ?>
     <h2>PARENT TASK</h2>
     <?php
         if (
             isset($_GET['task'])
                 && $_GET['task'] !== '(NA)'
         ) {
-            $parent_task = $tasks[$_GET['task']];
+            $parent_task
+                = $tasks[$_GET['task']][0];
             if ($parent_task === '(NA)') {
                 # This is a second-level task,
                 #   so we don't include the "task"
@@ -442,8 +496,8 @@
         $child_tasks
             = array_filter(
                 $tasks,
-                fn ($parent_task) =>
-                    $parent_task === $task
+                fn ($details) =>
+                    $details[0] === $task
             );
         if (count($child_tasks) === 0) {
             echo '(NA)';
@@ -752,7 +806,7 @@
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $tasks[$_GET['task']]
+                            $tasks[$_GET['task']][0]
                         );
                 } else if (
                     isset(
@@ -771,6 +825,50 @@
             ?>"
             size="80"
         >
+        <br>
+        <label for="new-status">STATUS</label>
+        <br>
+        <select id="new-status" name="new-status">
+            <?php
+                foreach (
+                    [
+                        '(NA)',
+                        'PENDING',
+                        'COMPLETED'
+                    ]
+                        as $status
+                ) {
+                    $selected = '';
+                    if (
+                        (
+                            # Modification case.
+                            isset($_GET['task'])
+                                && $tasks[$_GET['task']][1]
+                                    === $status
+                        ) || (
+                            # Either the parent
+                            #   task addition
+                            #   case,
+                            #   or the addition
+                            #   rejection case
+                            #   (rejection
+                            #   after attempting
+                            #   to add an existing
+                            #   task).
+                            isset(
+                                $_GET['new-status']
+                            )
+                                && $_GET['new-status']
+                                    === $status
+                        )
+                    ) {
+                        $selected = 'selected';
+                    }
+                    echo
+                        "<option {$selected}>{$status}</option>";
+                }
+            ?>
+        </select>
         <br>
         <input
             type="submit"
@@ -798,15 +896,15 @@
                     )
                     . '">(NA)</a></li>';
             foreach (
-                $tasks as $task => $parent_task
+                $tasks as $task => $details
             ) {
                 $label = $task;
                 # Check if there is no task
                 #   with the parent task name.
                 if (
-                    $parent_task !== '(NA)'
+                    $details[0] !== '(NA)'
                         && !isset(
-                            $tasks[$parent_task]
+                            $tasks[$details[0]]
                         )
                 ) {
                     $label

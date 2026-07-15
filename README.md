@@ -51,12 +51,24 @@ This is the definition of the user API (it is called "public API" by the [Semant
 - facilitate for the user of LMS to determine what changes they should expect when there has been released a major, minor, or patch version of LMS.
 
 - As for the data model:
-    - there are tasks. A task is a key-value pair. The key represents the name of the task. The value represents the name of another task, called the parent task of the task. The name of the task can contain any character except U+000A (LINE FEED, `\n`) and U+0009 (CHARACTER TABULATION, `\t`).
+    - there are tasks. A task is a key-value pair, in which:
+        - the key represents the name of the task. It can contain any character except U+000A (LINE FEED, `\n`) and U+0009 (CHARACTER TABULATION, `\t`),
+        - the value represents the details of the task. They contain:
+            - the name of another task, called the parent task of the task,
+            - the status of the task.
 - As for user operations:
     - there are possible the following user operations:
         - task viewing. It involves specifying the name of the task to view,
-        - task addition. It involves specifying the name and parent task of a task, and saving them to the task file,
-        - task modification. It involves modifying the name, or (and) the name of the parent task of a task, and saving it (them) to the task file,
+        - task addition. For a given task, it involves specifying:
+            - its name,
+            - and its parent task,
+            - and its status,
+        and saving the data specified to the task file,
+        - task modification. For a given task, it involves modifying:
+            - its name,
+            - or (and) the name of its parent task,
+            - or (and) its status,
+        and saving the data changed to the task file,
         - task removal. It involves specifying the name of the task to remove, and removal confirmation,
         - task searching. It involves specifying the name of the task to search for, or part of it,
     - task `(NA)` can not be modified, removed, or found by searching.
