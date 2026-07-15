@@ -42,6 +42,8 @@ LMS MUST work when JavaScript is disabled, or not supported at all.
 
 Navigation MUST be achievable through visible interface elements. It means that keyboard shortcuts (if there be any) MUST result in operations corresponding to operations in which such elements result. This is to simplify LMS usage.
 
+Focusable elements MUST be organized vertically. It means that there can be no more than one such element in the same line (e.g. buttons, links, text controls). This is to avoid accidental use of the right and left arrows in Lynx to change focus (outside of a text control the left arrow goes back in history, and the right arrow submits).
+
 ### User API
 
 This is the definition of the user API (it is called "public API" by the [Semantic Versioning](https://semver.org/) specification). This definition is intended to:
