@@ -353,7 +353,7 @@
                 ]
             );
         $url = "{$base_url}?{$query}";
-        $all_tasks_link 
+        $all_tasks_link
             = '<a href="'
                 . htmlspecialchars_with_ent_quotes(
                     $url
@@ -769,7 +769,7 @@
                 } else if (
                     isset($_GET['new-task'])
                 ) {
-                    # Either parent task adddition
+                    # Either parent task addition
                     #   case, or addition
                     #   rejection case (rejection
                     #   after attempting to add
