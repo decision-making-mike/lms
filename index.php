@@ -395,7 +395,10 @@
         if (
             isset($_GET['task'])
         ) {
-            echo $tasks[$_GET['task']][1];
+            echo
+                htmlspecialchars_with_ent_quotes(
+                    $tasks[$_GET['task']][1]
+                );
         } else {
             echo '(NA)';
         }
@@ -509,7 +512,11 @@
                     );
                 $url = "{$base_url}?{$query}";
                 $html
-                    .= "<li><a href=\"{$url}\">"
+                    .= "<li><a href=\""
+                        . htmlspecialchars_with_ent_quotes(
+                            $url
+                        )
+                        . "\">"
                         . htmlspecialchars_with_ent_quotes(
                             $child_task
                         )
@@ -600,7 +607,10 @@
     ):
 ?>
 <h1>SEARCH RESULT FOR "<?php
-    echo $_GET['target-task'];
+    echo
+        htmlspecialchars_with_ent_quotes(
+            $_GET['target-task']
+        );
 ?>"</h1>
 <?php
     $search_result = [];
@@ -646,7 +656,11 @@
                 );
             $url = "{$base_url}?{$query}";
             $html
-                .= "<li><a href=\"{$url}\">"
+                .= "<li><a href=\""
+                    . htmlspecialchars_with_ent_quotes(
+                        $url
+                    )
+                    . "\">"
                     . htmlspecialchars_with_ent_quotes(
                         $task
                     )
