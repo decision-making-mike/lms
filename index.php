@@ -4,6 +4,56 @@
 -->
 <?php header('Cache-Control: no-cache'); ?>
 <?php
+    function get_task_html (
+        $base_url,
+        $tasks,
+        $task
+    ) {
+        $task_html
+            = htmlspecialchars_with_ent_quotes(
+                $task
+            );
+
+        $query
+            = http_build_query(
+                [
+                    'task' => $task
+                ]
+            );
+        $url = "{$base_url}?{$query}";
+        $url_html
+            = htmlspecialchars_with_ent_quotes(
+                $url
+            );
+
+        $status_html
+            = htmlspecialchars_with_ent_quotes(
+                $tasks[$task][1]
+            );
+
+        # Get the information whether any
+        #   of the child tasks of the task
+        #   is pending.
+        $child_task_pending_information_html = '';
+        foreach ($tasks as $details) {
+            if (
+                $details[0] === $task
+                    && $details[1] === 'PENDING'
+            ) {
+                $child_task_pending_information_html
+                    = '(CHILD TASK PENDING) ';
+                break;
+            }
+        }
+
+        return
+            "({$status_html}) "
+            . $child_task_pending_information_html
+            . "<a href=\"{$url_html}\">"
+            . $task_html
+            . '</a>';
+    }
+
     # This function has been created solely
     #   to not have to remember
     #   which calls of "htmlspecialchars()" refer
@@ -504,40 +554,14 @@
             foreach (
                 $child_tasks as $child_task => $_
             ) {
-                $query
-                    = http_build_query(
-                        [
-                            'task' => $child_task
-                        ]
-                    );
-                $url = "{$base_url}?{$query}";
-                $child_task_pending_html = '';
-                foreach ($tasks as $details) {
-                    if (
-                        $details[0]
-                            === $child_task
-                            && $details[1]
-                                === 'PENDING'
-                    ) {
-                        $child_task_pending_html
-                            = '(CHILD TASK PENDING) ';
-                        break;
-                    }
-                }
                 $html
-                    .= "<li>("
-                        . htmlspecialchars_with_ent_quotes(
-                            $tasks[$child_task][1]
-                        )
-                        . ") {$child_task_pending_html}<a href=\""
-                        . htmlspecialchars_with_ent_quotes(
-                            $url
-                        )
-                        . "\">"
-                        . htmlspecialchars_with_ent_quotes(
-                            $child_task
-                        )
-                        . '</a></li>';
+                    .= '<li>'
+                    . get_task_html(
+                        $base_url,
+                        $tasks,
+                        $child_task
+                    )
+                    .'</li>';
             }
             echo "<ul>{$html}</ul>";
         }
@@ -665,23 +689,14 @@
     $html = '';
     if (count($search_result) > 0) {
         foreach ($search_result as $task) {
-            $query
-                = http_build_query(
-                    [
-                        'task' => $task
-                    ]
-                );
-            $url = "{$base_url}?{$query}";
             $html
-                .= "<li><a href=\""
-                    . htmlspecialchars_with_ent_quotes(
-                        $url
-                    )
-                    . "\">"
-                    . htmlspecialchars_with_ent_quotes(
-                        $task
-                    )
-                    . '</a></li>';
+                .= '<li>'
+                . get_task_html(
+                    $base_url,
+                    $tasks,
+                    $task
+                )
+                .'</li>';
         }
         echo "<ul>{$html}</ul>";
     } else {
@@ -918,7 +933,12 @@
             foreach (
                 $tasks as $task => $details
             ) {
-                $label = $task;
+                $task_html
+                    = get_task_html(
+                        $base_url,
+                        $tasks,
+                        $task
+                    );
                 # Check if there is no task
                 #   with the parent task name.
                 if (
@@ -927,26 +947,10 @@
                             $tasks[$details[0]]
                         )
                 ) {
-                    $label
-                        = "(No task with the parent task name) {$label}";
+                    $task_html
+                        = "(No task with the parent task name) {$task_html}";
                 }
-                $query
-                    = http_build_query(
-                        [
-                            'task' => $task
-                        ]
-                    );
-                $url = "{$base_url}?{$query}";
-                $html
-                    .= '<li><a href="'
-                        . htmlspecialchars_with_ent_quotes(
-                            $url
-                        )
-                        . '">'
-                        . htmlspecialchars_with_ent_quotes(
-                            $label
-                        )
-                        . '</a></li>';
+                $html .= "<li>{$task_html}</li>";
             }
             echo $html;
         ?>
