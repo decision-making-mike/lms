@@ -647,62 +647,62 @@
         $_GET['view'] === 'search-result-view'
     ):
 ?>
-<h1>SEARCH RESULT FOR "<?php
-    echo
-        htmlspecialchars_with_ent_quotes(
-            $_GET['target-task']
-        );
-?>"</h1>
-<?php
-    $search_result = [];
-    # This "if" has been created solely to prevent
-    #   the PHP warning about the needle being
-    #   empty.
-    if ($_GET['target-task'] !== '') {
-        # Check the task '(NA)' (it's not
-        #   in the task file, so we need to check
-        #   it separately).
-        if (
-            strpos(
-                '(na)',
-                strtolower($_GET['target-task'])
-            ) !== false
-        ) $search_result[] = '(NA)';
-        $search_result
-            = array_merge(
-                $search_result,
-                array_keys(
-                    array_filter(
-                        $tasks,
-                        fn ($task) =>
-                            strpos(
-                                strtolower($task),
-                                strtolower(
-                                    $_GET['target-task']
-                                )
-                            ) !== false,
-                        ARRAY_FILTER_USE_KEY
-                    )
-                )
+    <h1>SEARCH RESULT FOR "<?php
+        echo
+            htmlspecialchars_with_ent_quotes(
+                $_GET['target-task']
             );
-    }
-    $html = '';
-    if (count($search_result) > 0) {
-        foreach ($search_result as $task) {
-            $html
-                .= '<li>'
-                . get_task_html(
-                    $base_url,
-                    $tasks,
-                    $task
-                )
-                .'</li>';
+    ?>"</h1>
+    <?php
+        $search_result = [];
+        # This "if" has been created solely to prevent
+        #   the PHP warning about the needle being
+        #   empty.
+        if ($_GET['target-task'] !== '') {
+            # Check the task '(NA)' (it's not
+            #   in the task file, so we need to check
+            #   it separately).
+            if (
+                strpos(
+                    '(na)',
+                    strtolower($_GET['target-task'])
+                ) !== false
+            ) $search_result[] = '(NA)';
+            $search_result
+                = array_merge(
+                    $search_result,
+                    array_keys(
+                        array_filter(
+                            $tasks,
+                            fn ($task) =>
+                                strpos(
+                                    strtolower($task),
+                                    strtolower(
+                                        $_GET['target-task']
+                                    )
+                                ) !== false,
+                            ARRAY_FILTER_USE_KEY
+                        )
+                    )
+                );
         }
-        echo "<ul>{$html}</ul>";
-    } else {
-        echo '(NA)';
-    }
-?>
+        $html = '';
+        if (count($search_result) > 0) {
+            foreach ($search_result as $task) {
+                $html
+                    .= '<li>'
+                    . get_task_html(
+                        $base_url,
+                        $tasks,
+                        $task
+                    )
+                    .'</li>';
+            }
+            echo "<ul>{$html}</ul>";
+        } else {
+            echo '(NA)';
+        }
+    ?>
 <?php
     elseif (
         $_GET['view']
