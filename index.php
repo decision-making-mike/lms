@@ -512,7 +512,11 @@
                     );
                 $url = "{$base_url}?{$query}";
                 $html
-                    .= "<li><a href=\""
+                    .= "<li>("
+                        . htmlspecialchars_with_ent_quotes(
+                            $tasks[$child_task][1]
+                        )
+                        . ") <a href=\""
                         . htmlspecialchars_with_ent_quotes(
                             $url
                         )
