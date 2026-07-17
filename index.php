@@ -511,12 +511,25 @@
                         ]
                     );
                 $url = "{$base_url}?{$query}";
+                $child_task_pending_html = '';
+                foreach ($tasks as $details) {
+                    if (
+                        $details[0]
+                            === $child_task
+                            && $details[1]
+                                === 'PENDING'
+                    ) {
+                        $child_task_pending_html
+                            = '(CHILD TASK PENDING) ';
+                        break;
+                    }
+                }
                 $html
                     .= "<li>("
                         . htmlspecialchars_with_ent_quotes(
                             $tasks[$child_task][1]
                         )
-                        . ") <a href=\""
+                        . ") {$child_task_pending_html}<a href=\""
                         . htmlspecialchars_with_ent_quotes(
                             $url
                         )
