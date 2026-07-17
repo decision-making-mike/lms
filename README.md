@@ -74,7 +74,12 @@ This is the definition of the user API (it is called "public API" by the [Semant
     - task `(NA)` can not be modified, removed, or found by searching.
 - As for data presentation:
     - there are the following views:
-        - the default view. It shows a task,
+        - the task view (default view). It shows:
+            - a task,
+            - for each of the child tasks of the task:
+                - its status,
+                - the information whether at least one of its child tasks is pending,
+                - its name,
         - the all task view,
         - the modification-addition form view,
         - the removal confirmation form view.
