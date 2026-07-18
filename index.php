@@ -436,20 +436,7 @@
                 )
                 . '">ALL TASKS</a>';
     }
-    $query
-        = http_build_query(
-            [
-                'view'
-                    => 'modification-addition-form-view'
-            ]
-        );
-    $url = "{$base_url}?{$query}";
-    echo
-        '<a href="'
-            . htmlspecialchars_with_ent_quotes(
-                $url
-            )
-            . "\">ADD A TASK</a><br>{$all_tasks_link}<hr>";
+    echo "{$all_tasks_link}<hr>";
 ?>
 <!-- View handling. -->
 <?php if (!isset($_GET['view'])): ?>
