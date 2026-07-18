@@ -33,17 +33,43 @@
 
         # Get the information whether any
         #   of the child tasks of the task
-        #   is pending.
+        #   is pending (recurse to the leaf
+        #   tasks).
         $child_task_pending_information_html = '';
-        foreach ($tasks as $details) {
+        $pending_tasks
+            = [
+                $task
+            ];
+        while (count($pending_tasks) !== 0) {
+            $t = array_pop($pending_tasks);
+
+            $child_tasks = [];
+            foreach ($tasks as $tt => $details) {
+                # If "$tt" is a child task
+                #   of "$t".
+                if ($details[0] === $t) {
+                    if (
+                        $details[1] === 'PENDING'
+                    ) {
+                        $child_task_pending_information_html
+                            = '(CHILD TASK PENDING) ';
+                        break;
+                    }
+
+                    $child_tasks[] = $tt;
+                }
+            }
             if (
-                $details[0] === $task
-                    && $details[1] === 'PENDING'
-            ) {
                 $child_task_pending_information_html
-                    = '(CHILD TASK PENDING) ';
+                    !== ''
+            ) {
                 break;
             }
+            $pending_tasks
+                = [
+                    ...$pending_tasks,
+                    ...$child_tasks
+                ];
         }
 
         return
