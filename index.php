@@ -1,9 +1,8 @@
-<!--
-    Tell Lynx to not use cache
-    (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
--->
-<?php header('Cache-Control: no-cache'); ?>
 <?php
+    # Tell Lynx to not use cache
+    #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
+    header('Cache-Control: no-cache');
+
     function get_task_html (
         $base_url,
         $tasks,
