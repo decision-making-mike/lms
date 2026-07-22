@@ -458,6 +458,7 @@
     <?php
         if (
             isset($_GET['task'])
+                && $_GET['task'] !== '(NA)'
         ) {
             echo
                 htmlspecialchars_with_ent_quotes(
