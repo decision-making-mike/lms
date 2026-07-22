@@ -5,8 +5,11 @@
 
     function get_task_html (
         $base_url,
+        $task_list,
         $tasks,
-        $task
+        $task,
+        ?callable
+            $get_decorated_task_list_item_html
     ) {
         $task_html
             = htmlspecialchars_with_ent_quotes(
@@ -29,7 +32,7 @@
             = $task === '(NA)'
                 ? '(NA)'
                 : htmlspecialchars_with_ent_quotes(
-                    $tasks[$task][1]
+                    $task_list[$task][1]
                 );
 
         # Get the information whether any
@@ -73,12 +76,46 @@
                 ];
         }
 
+        if (
+            $get_decorated_task_list_item_html
+                !== null
+        ) {
+            $task_html
+                = $get_decorated_task_list_item_html(
+                    $task_html
+                );
+        }
+
         return
             "({$status_html}) "
             . $child_task_pending_information_html
             . "<a href=\"{$url_html}\">"
             . $task_html
             . '</a>';
+    }
+
+    function get_task_list_html (
+        $base_url,
+        $task_list,
+        $all_task_list,
+        callable
+            $get_decorated_task_list_item_html
+                = null
+    ) {
+        $task_list_content_html = '';
+        foreach ($task_list as $task_name => $_) {
+            $task_list_item_content_html
+                = get_task_html(
+                    $base_url,
+                    $task_list,
+                    $all_task_list,
+                    $task_name,
+                    $get_decorated_task_list_item_html
+                );
+            $task_list_content_html
+                .= "<li>{$task_list_item_content_html}</li>";
+        }
+        return "<ul>{$task_list_content_html}</ul>";
     }
 
     # This function has been created solely
@@ -565,20 +602,12 @@
         if (count($child_tasks) === 0) {
             echo '(NA)';
         } else {
-            $html = '';
-            foreach (
-                $child_tasks as $child_task => $_
-            ) {
-                $html
-                    .= '<li>'
-                    . get_task_html(
-                        $base_url,
-                        $tasks,
-                        $child_task
-                    )
-                    .'</li>';
-            }
-            echo "<ul>{$html}</ul>";
+            echo
+                get_task_list_html(
+                    $base_url,
+                    $child_tasks,
+                    $tasks
+                );
         }
     ?>
     <h2>ACTIONS</h2>
@@ -682,38 +711,30 @@
                     '(na)',
                     strtolower($_GET['target-task'])
                 ) !== false
-            ) $search_result[] = '(NA)';
+            ) $search_result['(NA)'] = null;
             $search_result
                 = array_merge(
                     $search_result,
-                    array_keys(
-                        array_filter(
-                            $tasks,
-                            fn ($task) =>
-                                strpos(
-                                    strtolower($task),
-                                    strtolower(
-                                        $_GET['target-task']
-                                    )
-                                ) !== false,
-                            ARRAY_FILTER_USE_KEY
-                        )
+                    array_filter(
+                        $tasks,
+                        fn ($task) =>
+                            strpos(
+                                strtolower($task),
+                                strtolower(
+                                    $_GET['target-task']
+                                )
+                            ) !== false,
+                        ARRAY_FILTER_USE_KEY
                     )
                 );
         }
-        $html = '';
         if (count($search_result) > 0) {
-            foreach ($search_result as $task) {
-                $html
-                    .= '<li>'
-                    . get_task_html(
-                        $base_url,
-                        $tasks,
-                        $task
-                    )
-                    .'</li>';
-            }
-            echo "<ul>{$html}</ul>";
+            echo
+                get_task_list_html(
+                    $base_url,
+                    $search_result,
+                    $tasks
+                );
         } else {
             echo '(NA)';
         }
@@ -936,38 +957,27 @@
     elseif ($_GET['view'] === 'all-task-view'):
 ?>
     <h1>ALL TASKS</h1>
-    <ul>
-        <?php
-            $url = $base_url;
-            $html
-                = '<li><a href="'
-                    . htmlspecialchars_with_ent_quotes(
-                        $url
-                    )
-                    . '">(NA)</a></li>';
-            foreach (
-                $tasks as $task => $details
-            ) {
-                $task_html
-                    = get_task_html(
-                        $base_url,
-                        $tasks,
-                        $task
-                    );
+    <?php
+        echo
+            get_task_list_html(
+                $base_url,
+                array_merge(
+                    [
+                        '(NA)' => null
+                    ],
+                    $tasks
+                ),
+                $tasks,
                 # Check if there is no task
                 #   with the parent task name.
-                if (
-                    $details[0] !== '(NA)'
-                        && !isset(
-                            $tasks[$details[0]]
-                        )
-                ) {
-                    $task_html
-                        = "(No task with the parent task name) {$task_html}";
-                }
-                $html .= "<li>{$task_html}</li>";
-            }
-            echo $html;
-        ?>
-    </ul>
+                fn ($task_html)
+                    =>
+                        $details[0] !== '(NA)'
+                            && !isset(
+                                $tasks[$details[0]]
+                            )
+                                ? "(No task with the parent task name) {$task_html}"
+                                : $task_html
+            );
+    ?>
 <?php endif; ?>
