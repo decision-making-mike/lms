@@ -26,9 +26,11 @@
             );
 
         $status_html
-            = htmlspecialchars_with_ent_quotes(
-                $tasks[$task][1]
-            );
+            = $task === '(NA)'
+                ? '(NA)'
+                : htmlspecialchars_with_ent_quotes(
+                    $tasks[$task][1]
+                );
 
         # Get the information whether any
         #   of the child tasks of the task
