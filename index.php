@@ -19,7 +19,7 @@
         $query
             = http_build_query(
                 [
-                    'task' => $task_name
+                    'task-name' => $task_name
                 ]
             );
         $task_view_url = "{$base_url}?{$query}";
@@ -246,8 +246,8 @@
                         $base_url,
                         [
                             'action' => 'removal',
-                            'task'
-                                => $_GET['task']
+                            'task-name'
+                                => $_GET['task-name']
                         ]
                     );
                     exit;
@@ -259,8 +259,8 @@
                     set_header(
                         $base_url,
                         [
-                            'task'
-                                => $_GET['task']
+                            'task-name'
+                                => $_GET['task-name']
                         ]
                     );
                     exit;
@@ -285,7 +285,7 @@
                 #   view in which the user will be
                 #   able to see the former
                 #   child tasks.
-                unset($tasks[$_GET['task']]);
+                unset($tasks[$_GET['task-name']]);
 
                 save_tasks(
                     $configuration['task-file-path'],
@@ -314,14 +314,14 @@
                     )
                 ) {
                     if (
-                        isset($_GET['old-task'])
+                        isset($_GET['old-task-name'])
                     ) {
                         # Modification case.
                         set_header(
                             $base_url,
                             [
-                                'task'
-                                    => $_GET['old-task']
+                                'task-name'
+                                    => $_GET['old-task-name']
                             ]
                         );
                         exit;
@@ -332,9 +332,9 @@
                     }
                 }
             case 'modification-addition':
-                $new_task = $_GET['new-task'];
+                $new_task = $_GET['new-task-name'];
                 $new_parent_task
-                    = $_GET['new-parent-task'];
+                    = $_GET['new-parent-task-name'];
                 $new_status = $_GET['new-status'];
                 $reserved_character_replacements
                     = [
@@ -365,7 +365,7 @@
                 # Check if it's an attempt
                 #   to add an existing task.
                 if (
-                    !isset($_GET['old-task'])
+                    !isset($_GET['old-task-name'])
                         && isset(
                             $tasks[$new_task]
                         )
@@ -378,9 +378,9 @@
                         [
                             'view'
                                 => 'modification-addition-form-view',
-                            'new-task'
+                            'new-task-name'
                                 => $new_task,
-                            'new-parent-task'
+                            'new-parent-task-name'
                                 => $new_parent_task,
                             'new-status'
                                 => $new_status
@@ -390,10 +390,10 @@
                     # Check if it's
                     #   the modification case.
                     if (
-                        isset($_GET['old-task'])
+                        isset($_GET['old-task-name'])
                     ) {
                         unset(
-                            $tasks[$_GET['old-task']]
+                            $tasks[$_GET['old-task-name']]
                         );
                         # Modify the references
                         #   of the name
@@ -406,7 +406,7 @@
                         ) {
                             if (
                                 $details[0]
-                                    === $_GET['old-task']
+                                    === $_GET['old-task-name']
                             ) {
                                 $tasks[$task][0]
                                     = $new_task;
@@ -429,7 +429,7 @@
                     set_header(
                         $base_url,
                         [
-                            'task' => $new_task
+                            'task-name' => $new_task
                         ]
                     );
                 }
@@ -483,10 +483,10 @@
     <!-- Task view (default view). -->
     <h1>
         <?php
-            if (isset($_GET['task'])) {
+            if (isset($_GET['task-name'])) {
                 echo
                     htmlspecialchars_with_ent_quotes(
-                        $_GET['task']
+                        $_GET['task-name']
                     );
             } else {
                 echo '(NA)';
@@ -496,12 +496,12 @@
     <h2>STATUS</h2>
     <?php
         if (
-            isset($_GET['task'])
-                && $_GET['task'] !== '(NA)'
+            isset($_GET['task-name'])
+                && $_GET['task-name'] !== '(NA)'
         ) {
             echo
                 htmlspecialchars_with_ent_quotes(
-                    $tasks[$_GET['task']][1]
+                    $tasks[$_GET['task-name']][1]
                 );
         } else {
             echo '(NA)';
@@ -510,11 +510,11 @@
     <h2>PARENT TASK</h2>
     <?php
         if (
-            isset($_GET['task'])
-                && $_GET['task'] !== '(NA)'
+            isset($_GET['task-name'])
+                && $_GET['task-name'] !== '(NA)'
         ) {
             $parent_task
-                = $tasks[$_GET['task']][0];
+                = $tasks[$_GET['task-name']][0];
             if ($parent_task === '(NA)') {
                 # This is a second-level task,
                 #   so we don't include the "task"
@@ -543,7 +543,7 @@
                     $query
                         = http_build_query(
                             [
-                                'task'
+                                'task-name'
                                     => $parent_task
                             ]
                         );
@@ -565,7 +565,7 @@
                             [
                                 'view'
                                     => 'modification-addition-form-view',
-                                'new-task'
+                                'new-task-name'
                                     => $parent_task
                             ]
                         );
@@ -593,7 +593,7 @@
         #   of its name in the file are
         #   represented there as "(NA)".
         #   Here we unify these representations.
-        $task = $_GET['task'] ?? '(NA)';
+        $task = $_GET['task-name'] ?? '(NA)';
 
         $child_tasks
             = array_filter(
@@ -616,8 +616,9 @@
     <ul>
         <?php
             if (
-                isset($_GET['task'])
-                    && $_GET['task'] !== '(NA)'
+                isset($_GET['task-name'])
+                    && $_GET['task-name']
+                        !== '(NA)'
             ):
         ?>
             <li>
@@ -627,8 +628,8 @@
                             [
                                 'view'
                                     => 'modification-addition-form-view',
-                                'task'
-                                    => $_GET['task']
+                                'task-name'
+                                    => $_GET['task-name']
                             ]
                         );
                     $url = "{$base_url}?{$query}";
@@ -649,8 +650,8 @@
                             [
                                 'view'
                                     => 'removal-confirmation-form-view',
-                                'task'
-                                    => $_GET['task']
+                                'task-name'
+                                    => $_GET['task-name']
                             ]
                         );
                     $url = "{$base_url}?{$query}";
@@ -672,8 +673,9 @@
                         [
                             'view'
                                 => 'modification-addition-form-view',
-                            'new-parent-task'
-                                => $_GET['task'] ?? '(NA)'
+                            'new-parent-task-name'
+                                => $_GET['task-name']
+                                    ?? '(NA)'
                         ]
                     );
                 $url = "{$base_url}?{$query}";
@@ -780,7 +782,7 @@
             echo
                 'REMOVAL OF "'
                     . htmlspecialchars_with_ent_quotes(
-                        $_GET['task']
+                        $_GET['task-name']
                     )
                     . '"';
         ?>
@@ -788,7 +790,7 @@
     <p>Do you really want to remove "<?php
         echo
             htmlspecialchars_with_ent_quotes(
-                $_GET['task']
+                $_GET['task-name']
             );
     ?>"?</p>
     <form method="get">
@@ -799,11 +801,11 @@
         >
         <input
             type="hidden"
-            name="task"
+            name="task-name"
             value="<?php
                 echo
                     htmlspecialchars_with_ent_quotes(
-                        $_GET['task']
+                        $_GET['task-name']
                     );
             ?>"
         >
@@ -833,11 +835,11 @@
     <h1>
         <?php
             # Check if it's the modification case.
-            if (isset($_GET['task'])) {
+            if (isset($_GET['task-name'])) {
                 echo
                     'MODIFICATION OF "'
                         . htmlspecialchars_with_ent_quotes(
-                            $_GET['task']
+                            $_GET['task-name']
                         )
                         . '"';
             } else {
@@ -853,33 +855,33 @@
         >
         <?php
             # Check if it's the modification case.
-            if (isset($_GET['task'])):
+            if (isset($_GET['task-name'])):
         ?>
             <input
                 type="hidden"
-                name="old-task"
+                name="old-task-name"
                 value="<?php
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['task']
+                            $_GET['task-name']
                         );
                 ?>"
             >
         <?php endif; ?>
-        <label for="new-task">TASK</label>
+        <label for="new-task-name">TASK</label>
         <br>
         <input
-            id="new-task"
-            name="new-task"
+            id="new-task-name"
+            name="new-task-name"
             value="<?php
-                if (isset($_GET['task'])) {
+                if (isset($_GET['task-name'])) {
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['task']
+                            $_GET['task-name']
                         );
                 } else if (
-                    isset($_GET['new-task'])
+                    isset($_GET['new-task-name'])
                 ) {
                     # Either parent task addition
                     #   case, or addition
@@ -888,7 +890,7 @@
                     #   an existing task).
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['new-task']
+                            $_GET['new-task-name']
                         );
                 }
             ?>"
@@ -896,22 +898,22 @@
         >
         <br>
         <label
-            for="new-parent-task"
+            for="new-parent-task-name"
         >PARENT TASK</label>
         <br>
         <input
-            id="new-parent-task"
-            name="new-parent-task"
+            id="new-parent-task-name"
+            name="new-parent-task-name"
             value="<?php
-                if (isset($_GET['task'])) {
+                if (isset($_GET['task-name'])) {
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $tasks[$_GET['task']][0]
+                            $tasks[$_GET['task-name']][0]
                         );
                 } else if (
                     isset(
-                        $_GET['new-parent-task']
+                        $_GET['new-parent-task-name']
                     )
                 ) {
                     # Addition rejection case
@@ -920,7 +922,7 @@
                     #   an existing task).
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['new-parent-task']
+                            $_GET['new-parent-task-name']
                         );
                 }
             ?>"
@@ -943,8 +945,8 @@
                     if (
                         (
                             # Modification case.
-                            isset($_GET['task'])
-                                && $tasks[$_GET['task']][1]
+                            isset($_GET['task-name'])
+                                && $tasks[$_GET['task-name']][1]
                                     === $status
                         ) || (
                             # Either the parent
