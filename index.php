@@ -706,6 +706,13 @@
             # Check the task '(NA)' (it's not
             #   in the task file, so we need to check
             #   it separately).
+            # I'm not sure if the use
+            #   of "mb_strpos" and "mb_strtolower"
+            #   won't add to the confusion.
+            #   To me and Google Gemini, this
+            #   condition will work for multibyte
+            #   characters even with "strpos"
+            #   and "strtolower".
             if (
                 strpos(
                     '(na)',
