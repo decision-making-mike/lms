@@ -1,0 +1,1 @@
+does it influence security at all when i allow multibyte characters in opposition to allowing only single-byte ones in my php web app? think most broadly.
