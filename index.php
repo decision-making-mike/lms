@@ -3,36 +3,36 @@
     #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
     header('Cache-Control: no-cache');
 
-    function get_task_html (
+    function get_task_list_item_content_html (
         $base_url,
         $task_list,
-        $tasks,
-        $task,
+        $all_task_list,
+        $task_name,
         ?callable
-            $get_decorated_task_list_item_html
+            $get_decorated_task_list_item_content_html
     ) {
-        $task_html
+        $task_name_html
             = htmlspecialchars_with_ent_quotes(
-                $task
+                $task_name
             );
 
         $query
             = http_build_query(
                 [
-                    'task' => $task
+                    'task' => $task_name
                 ]
             );
-        $url = "{$base_url}?{$query}";
-        $url_html
+        $task_view_url = "{$base_url}?{$query}";
+        $task_view_url_html
             = htmlspecialchars_with_ent_quotes(
-                $url
+                $task_view_url
             );
 
-        $status_html
-            = $task === '(NA)'
+        $task_status_html
+            = $task_name === '(NA)'
                 ? '(NA)'
                 : htmlspecialchars_with_ent_quotes(
-                    $task_list[$task][1]
+                    $task_list[$task_name][1]
                 );
 
         # Get the information whether any
@@ -42,13 +42,15 @@
         $child_task_pending_information_html = '';
         $pending_tasks
             = [
-                $task
+                $task_name
             ];
         while (count($pending_tasks) !== 0) {
             $t = array_pop($pending_tasks);
 
             $child_tasks = [];
-            foreach ($tasks as $tt => $details) {
+            foreach (
+                $all_task_list as $tt => $details
+            ) {
                 # If "$tt" is a child task
                 #   of "$t".
                 if ($details[0] === $t) {
@@ -77,20 +79,20 @@
         }
 
         if (
-            $get_decorated_task_list_item_html
+            $get_decorated_task_list_item_content_html
                 !== null
         ) {
-            $task_html
-                = $get_decorated_task_list_item_html(
-                    $task_html
+            $task_name_html
+                = $get_decorated_task_list_item_content_html(
+                    $task_name_html
                 );
         }
 
         return
-            "({$status_html}) "
+            "({$task_status_html}) "
             . $child_task_pending_information_html
-            . "<a href=\"{$url_html}\">"
-            . $task_html
+            . "<a href=\"{$task_view_url_html}\">"
+            . $task_name_html
             . '</a>';
     }
 
@@ -99,18 +101,18 @@
         $task_list,
         $all_task_list,
         callable
-            $get_decorated_task_list_item_html
+            $get_decorated_task_list_item_content_html
                 = null
     ) {
         $task_list_content_html = '';
         foreach ($task_list as $task_name => $_) {
             $task_list_item_content_html
-                = get_task_html(
+                = get_task_list_item_content_html(
                     $base_url,
                     $task_list,
                     $all_task_list,
                     $task_name,
-                    $get_decorated_task_list_item_html
+                    $get_decorated_task_list_item_content_html
                 );
             $task_list_content_html
                 .= "<li>{$task_list_item_content_html}</li>";
