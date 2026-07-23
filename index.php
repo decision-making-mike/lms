@@ -134,16 +134,19 @@
 
     function save_tasks (
         $task_file_path,
-        $tasks
+        $all_tasks
     ) {
         $lines = [];
-        foreach ($tasks as $task => $details) {
+        foreach (
+            $all_tasks
+                as $task_name => $task_details
+        ) {
             $line
                 = implode(
                     "\t",
                     [
-                        $task,
-                        ...$details
+                        $task_name,
+                        ...$task_details
                     ]
                 );
             $lines[] = $line;
