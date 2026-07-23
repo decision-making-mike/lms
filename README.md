@@ -82,7 +82,8 @@ This is the definition of the user API (it is called "public API" by the [Semant
                 - its name,
         - the all task view,
         - the modification-addition form view,
-        - the removal confirmation form view.
+        - the removal confirmation form view,
+        - the search result view.
 - As for files:
     - there are used the following files:
         - the task file. The user can specify its path,
