@@ -14,10 +14,10 @@ The name of this project is "LMS". It is an abbreviation of the phrase "life man
 
 ### Requirements
 
-1. A web server is running.
-2. A web browser is running.
-3. The server can read and write to the file at the path specified as the value of the server environment variable `LMS_TASK_FILE_PATH`.
-4. The server can read the file `index.php`.
+1. A web server MUST be running.
+2. A web browser MUST be running.
+3. The server MUST be able to read and write to the file at the path specified as the value of the server environment variable `LMS_TASK_FILE_PATH`.
+4. The server MUST be able to read the file `index.php`.
 
 ### Example usage
 
