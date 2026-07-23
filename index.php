@@ -165,15 +165,15 @@
         $base_url,
         $query_parameters = []
     ) {
-        $url = $base_url;
+        $location_url = $base_url;
         if (count($query_parameters) !== 0) {
             $query
                 = http_build_query(
                     $query_parameters
                 );
-            $url .= "?{$query}";
+            $location_url .= "?{$query}";
         }
-        header("Location: $url");
+        header("Location: $location_url");
     }
 
     $configuration = require_once 'config.php';
