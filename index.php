@@ -718,9 +718,30 @@
                     array_filter(
                         $tasks,
                         fn ($task) =>
-                            strpos(
-                                strtolower($task),
-                                strtolower(
+                            # As far as I can say,
+                            #   with UTF-8
+                            #   "strpos"
+                            #   should correctly
+                            #   report a match,
+                            #   regardless
+                            #   of the existence
+                            #   of multibyte
+                            #   characters.
+                            #   It's only that
+                            #   the position might
+                            #   be wrong
+                            #   sometimes. Google
+                            #   Gemini says
+                            #   that with other
+                            #   encodings "strpos"
+                            #   might return false
+                            #   positives, so I'm
+                            #   using "mb_strpos".
+                            mb_strpos(
+                                mb_strtolower(
+                                    $task
+                                ),
+                                mb_strtolower(
                                     $_GET['target-task']
                                 )
                             ) !== false,
