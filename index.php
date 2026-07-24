@@ -6,7 +6,7 @@
     function get_task_list_item_content_html (
         $base_url,
         $task_list,
-        $all_task_list,
+        $all_tasks_list,
         $task_name,
         ?callable
             $get_decorated_task_list_item_content_html
@@ -49,7 +49,7 @@
 
             $child_tasks = [];
             foreach (
-                $all_task_list as $tt => $details
+                $all_tasks_list as $tt => $details
             ) {
                 # If "$tt" is a child task
                 #   of "$t".
@@ -99,7 +99,7 @@
     function get_task_list_html (
         $base_url,
         $task_list,
-        $all_task_list,
+        $all_tasks_list,
         callable
             $get_decorated_task_list_item_content_html
                 = null
@@ -110,7 +110,7 @@
                 = get_task_list_item_content_html(
                     $base_url,
                     $task_list,
-                    $all_task_list,
+                    $all_tasks_list,
                     $task_name,
                     $get_decorated_task_list_item_content_html
                 );
