@@ -39,14 +39,14 @@
         #   is pending (recurse to the leaf
         #   tasks).
         $child_task_pending_information_html = '';
-        $pending_tasks
+        $pending_task_list
             = [
                 $task_name
             ];
-        while (count($pending_tasks) !== 0) {
-            $t = array_pop($pending_tasks);
+        while (count($pending_task_list) !== 0) {
+            $t = array_pop($pending_task_list);
 
-            $child_tasks = [];
+            $child_task_list = [];
             foreach (
                 $all_tasks_list as $tt => $details
             ) {
@@ -61,7 +61,7 @@
                         break;
                     }
 
-                    $child_tasks[] = $tt;
+                    $child_task_list[] = $tt;
                 }
             }
             if (
@@ -70,10 +70,10 @@
             ) {
                 break;
             }
-            $pending_tasks
+            $pending_task_list
                 = [
-                    ...$pending_tasks,
-                    ...$child_tasks
+                    ...$pending_task_list,
+                    ...$child_task_list
                 ];
         }
 
@@ -596,19 +596,19 @@
         #   Here we unify these representations.
         $task = $_GET['task-name'] ?? '(NA)';
 
-        $child_tasks
+        $child_task_list
             = array_filter(
                 $tasks,
                 fn ($details) =>
                     $details[0] === $task
             );
-        if (count($child_tasks) === 0) {
+        if (count($child_task_list) === 0) {
             echo '(NA)';
         } else {
             echo
                 get_task_list_html(
                     $base_url,
-                    $child_tasks,
+                    $child_task_list,
                     $tasks
                 );
         }
