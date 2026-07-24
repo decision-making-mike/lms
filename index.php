@@ -515,9 +515,9 @@
             isset($_GET['task-name'])
                 && $_GET['task-name'] !== '(NA)'
         ) {
-            $parent_task
+            $parent_task_name
                 = $all_tasks_list[$_GET['task-name']][0];
-            if ($parent_task === '(NA)') {
+            if ($parent_task_name === '(NA)') {
                 # This is a second-level task,
                 #   so we don't include the "task"
                 #   parameter in the query. This
@@ -541,16 +541,16 @@
                 #   task.
                 # Check if there exists a task
                 #   with the parent task name.
-                if (isset($all_tasks_list[$parent_task])) {
+                if (isset($all_tasks_list[$parent_task_name])) {
                     $query
                         = http_build_query(
                             [
                                 'task-name'
-                                    => $parent_task
+                                    => $parent_task_name
                             ]
                         );
                     $url = "{$base_url}?{$query}";
-                    $label = $parent_task;
+                    $label = $parent_task_name;
                     echo
                         "<a href=\""
                             . htmlspecialchars_with_ent_quotes(
@@ -568,13 +568,13 @@
                                 'view'
                                     => 'modification-addition-form-view',
                                 'new-task-name'
-                                    => $parent_task
+                                    => $parent_task_name
                             ]
                         );
                     $url = "{$base_url}?{$query}";
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $parent_task
+                            $parent_task_name
                         )
                             . " (<a href=\""
                             . htmlspecialchars_with_ent_quotes(
