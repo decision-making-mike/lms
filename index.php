@@ -334,7 +334,7 @@
                 }
             case 'modification-addition':
                 $new_task_name = $_GET['new-task-name'];
-                $new_parent_task
+                $new_parent_task_name
                     = $_GET['new-parent-task-name'];
                 $new_status = $_GET['new-status'];
                 $reserved_character_replacements
@@ -355,11 +355,11 @@
                             $replacement,
                             $new_task_name
                         );
-                    $new_parent_task
+                    $new_parent_task_name
                         = str_replace(
                             $character,
                             $replacement,
-                            $new_parent_task
+                            $new_parent_task_name
                         );
                 }
 
@@ -382,7 +382,7 @@
                             'new-task-name'
                                 => $new_task_name,
                             'new-parent-task-name'
-                                => $new_parent_task,
+                                => $new_parent_task_name,
                             'new-status'
                                 => $new_status
                         ]
@@ -418,7 +418,7 @@
                     #   or addition case.
                     $all_tasks_list[$new_task_name]
                         = [
-                            $new_parent_task,
+                            $new_parent_task_name,
                             $new_status
                         ];
 
