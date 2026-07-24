@@ -333,7 +333,7 @@
                     }
                 }
             case 'modification-addition':
-                $new_task = $_GET['new-task-name'];
+                $new_task_name = $_GET['new-task-name'];
                 $new_parent_task
                     = $_GET['new-parent-task-name'];
                 $new_status = $_GET['new-status'];
@@ -349,11 +349,11 @@
                         as $character
                             => $replacement
                 ) {
-                    $new_task
+                    $new_task_name
                         = str_replace(
                             $character,
                             $replacement,
-                            $new_task
+                            $new_task_name
                         );
                     $new_parent_task
                         = str_replace(
@@ -368,7 +368,7 @@
                 if (
                     !isset($_GET['old-task-name'])
                         && isset(
-                            $all_tasks_list[$new_task]
+                            $all_tasks_list[$new_task_name]
                         )
                 ) {
                     # Reject the addition
@@ -380,7 +380,7 @@
                             'view'
                                 => 'modification-addition-form-view',
                             'new-task-name'
-                                => $new_task,
+                                => $new_task_name,
                             'new-parent-task-name'
                                 => $new_parent_task,
                             'new-status'
@@ -410,13 +410,13 @@
                                     === $_GET['old-task-name']
                             ) {
                                 $all_tasks_list[$task][0]
-                                    = $new_task;
+                                    = $new_task_name;
                             }
                         }
                     }
                     # Either the modification
                     #   or addition case.
-                    $all_tasks_list[$new_task]
+                    $all_tasks_list[$new_task_name]
                         = [
                             $new_parent_task,
                             $new_status
@@ -430,7 +430,8 @@
                     set_header(
                         $base_url,
                         [
-                            'task-name' => $new_task
+                            'task-name'
+                                => $new_task_name
                         ]
                     );
                 }
