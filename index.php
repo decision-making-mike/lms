@@ -134,7 +134,7 @@
         $task_file_path,
         $task_list
     ) {
-        $lines = [];
+        $line_list = [];
         foreach (
             $task_list
                 as $task_name => $task_details
@@ -147,11 +147,11 @@
                         ...$task_details
                     ]
                 );
-            $lines[] = $line;
+            $line_list[] = $line;
         }
         file_put_contents(
             $task_file_path,
-            implode("\n", $lines)
+            implode("\n", $line_list)
         );
     }
 
@@ -197,12 +197,12 @@
         #   upon releasing version 5.0.0.
         $old = false;
 
-        $lines
+        $line_list
             = file(
                 $configuration['task-file-path'],
                 FILE_IGNORE_NEW_LINES
             );
-        foreach ($lines as $line) {
+        foreach ($line_list as $line) {
             $fields = explode("\t", $line);
             $task = $fields[0];
             $details = array_slice($fields, 1);
