@@ -5,7 +5,6 @@
 
     function get_task_list_item_content_html (
         $base_url,
-        $task_list,
         $all_tasks_list,
         $task_name,
         ?callable
@@ -32,7 +31,7 @@
             = $task_name === '(NA)'
                 ? '(NA)'
                 : htmlspecialchars_with_ent_quotes(
-                    $task_list[$task_name][1]
+                    $all_tasks_list[$task_name][1]
                 );
 
         # Get the information whether any
@@ -109,7 +108,6 @@
             $task_list_item_content_html
                 = get_task_list_item_content_html(
                     $base_url,
-                    $task_list,
                     $all_tasks_list,
                     $task_name,
                     $get_decorated_task_list_item_content_html
