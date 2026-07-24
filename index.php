@@ -177,7 +177,7 @@
     $configuration = require_once 'config.php';
     $base_url = "http://{$_SERVER['HTTP_HOST']}";
 
-    $tasks = [];
+    $all_tasks_list = [];
     # If the task file doesn't exist, issue
     #   an error and exit, otherwise get
     #   the tasks.
@@ -218,7 +218,7 @@
                 $old = true;
             }
 
-            $tasks[$task] = $details;
+            $all_tasks_list[$task] = $details;
         }
 
         # Transition from the old format
@@ -229,7 +229,7 @@
         if ($old) {
             save_tasks(
                 $configuration['task-file-path'],
-                $tasks
+                $all_tasks_list
             );
         }
     }
@@ -286,11 +286,11 @@
                 #   view in which the user will be
                 #   able to see the former
                 #   child tasks.
-                unset($tasks[$_GET['task-name']]);
+                unset($all_tasks_list[$_GET['task-name']]);
 
                 save_tasks(
                     $configuration['task-file-path'],
-                    $tasks
+                    $all_tasks_list
                 );
 
                 set_header($base_url);
@@ -368,7 +368,7 @@
                 if (
                     !isset($_GET['old-task-name'])
                         && isset(
-                            $tasks[$new_task]
+                            $all_tasks_list[$new_task]
                         )
                 ) {
                     # Reject the addition
@@ -394,14 +394,14 @@
                         isset($_GET['old-task-name'])
                     ) {
                         unset(
-                            $tasks[$_GET['old-task-name']]
+                            $all_tasks_list[$_GET['old-task-name']]
                         );
                         # Modify the references
                         #   of the name
                         #   of the task as parent
                         #   task names.
                         foreach (
-                            $tasks
+                            $all_tasks_list
                                 as $task
                                     => $details
                         ) {
@@ -409,14 +409,14 @@
                                 $details[0]
                                     === $_GET['old-task-name']
                             ) {
-                                $tasks[$task][0]
+                                $all_tasks_list[$task][0]
                                     = $new_task;
                             }
                         }
                     }
                     # Either the modification
                     #   or addition case.
-                    $tasks[$new_task]
+                    $all_tasks_list[$new_task]
                         = [
                             $new_parent_task,
                             $new_status
@@ -424,7 +424,7 @@
 
                     save_tasks(
                         $configuration['task-file-path'],
-                        $tasks
+                        $all_tasks_list
                     );
 
                     set_header(
@@ -502,7 +502,7 @@
         ) {
             echo
                 htmlspecialchars_with_ent_quotes(
-                    $tasks[$_GET['task-name']][1]
+                    $all_tasks_list[$_GET['task-name']][1]
                 );
         } else {
             echo '(NA)';
@@ -515,7 +515,7 @@
                 && $_GET['task-name'] !== '(NA)'
         ) {
             $parent_task
-                = $tasks[$_GET['task-name']][0];
+                = $all_tasks_list[$_GET['task-name']][0];
             if ($parent_task === '(NA)') {
                 # This is a second-level task,
                 #   so we don't include the "task"
@@ -540,7 +540,7 @@
                 #   task.
                 # Check if there exists a task
                 #   with the parent task name.
-                if (isset($tasks[$parent_task])) {
+                if (isset($all_tasks_list[$parent_task])) {
                     $query
                         = http_build_query(
                             [
@@ -598,7 +598,7 @@
 
         $child_task_list
             = array_filter(
-                $tasks,
+                $all_tasks_list,
                 fn ($details) =>
                     $details[0] === $task
             );
@@ -609,7 +609,7 @@
                 get_task_list_html(
                     $base_url,
                     $child_task_list,
-                    $tasks
+                    $all_tasks_list
                 );
         }
     ?>
@@ -728,7 +728,7 @@
                 = array_merge(
                     $search_result,
                     array_filter(
-                        $tasks,
+                        $all_tasks_list,
                         fn ($task) =>
                             # As far as I can say,
                             #   with UTF-8
@@ -766,7 +766,7 @@
                 get_task_list_html(
                     $base_url,
                     $search_result,
-                    $tasks
+                    $all_tasks_list
                 );
         } else {
             echo '(NA)';
@@ -910,7 +910,7 @@
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $tasks[$_GET['task-name']][0]
+                            $all_tasks_list[$_GET['task-name']][0]
                         );
                 } else if (
                     isset(
@@ -947,7 +947,7 @@
                         (
                             # Modification case.
                             isset($_GET['task-name'])
-                                && $tasks[$_GET['task-name']][1]
+                                && $all_tasks_list[$_GET['task-name']][1]
                                     === $status
                         ) || (
                             # Either the parent
@@ -998,16 +998,16 @@
                     [
                         '(NA)' => null
                     ],
-                    $tasks
+                    $all_tasks_list
                 ),
-                $tasks,
+                $all_tasks_list,
                 # Check if there is no task
                 #   with the parent task name.
                 fn ($task_html)
                     =>
                         $details[0] !== '(NA)'
                             && !isset(
-                                $tasks[$details[0]]
+                                $all_tasks_list[$details[0]]
                             )
                                 ? "(No task with the parent task name) {$task_html}"
                                 : $task_html
