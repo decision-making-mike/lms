@@ -134,11 +134,11 @@
 
     function save_tasks (
         $task_file_path,
-        $all_tasks
+        $task_list
     ) {
         $lines = [];
         foreach (
-            $all_tasks
+            $task_list
                 as $task_name => $task_details
         ) {
             $line
