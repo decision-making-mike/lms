@@ -193,8 +193,7 @@
         # Transition from the old format
         #   of the task file (without task
         #   statuses) to the new one (with task
-        #   statuses). Code to be removed
-        #   upon releasing version 5.0.0.
+        #   statuses).
         $old = false;
 
         $line_list
@@ -210,9 +209,7 @@
             # Transition from the old format
             #   of the task file (without task
             #   statuses) to the new one
-            #   (with task statuses). Code to be
-            #   removed upon releasing version
-            #   5.0.0.
+            #   (with task statuses).
             if (count($details) === 1) {
                 $details[1] = '(NA)';
                 $old = true;
@@ -224,8 +221,7 @@
         # Transition from the old format
         #   of the task file (without task
         #   statuses) to the new one (with task
-        #   statuses). Code to be removed
-        #   upon releasing version 5.0.0.
+        #   statuses).
         if ($old) {
             save_tasks(
                 $configuration['task-file-path'],
