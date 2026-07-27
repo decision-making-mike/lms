@@ -444,7 +444,7 @@
         name="view"
         value="search-result-view"
     >
-    <input name="target-task">
+    <input name="target-string">
     <br>
     <input
         type="submit"
@@ -696,7 +696,7 @@
     <h1>SEARCH RESULT FOR "<?php
         echo
             htmlspecialchars_with_ent_quotes(
-                $_GET['target-task']
+                $_GET['target-string']
             );
     ?>"</h1>
     <?php
@@ -704,7 +704,7 @@
         # This "if" has been created solely to prevent
         #   the PHP warning about the needle being
         #   empty.
-        if ($_GET['target-task'] !== '') {
+        if ($_GET['target-string'] !== '') {
             # Check the task '(NA)' (it's not
             #   in the task file, so we need to check
             #   it separately).
@@ -718,7 +718,7 @@
             if (
                 strpos(
                     '(na)',
-                    strtolower($_GET['target-task'])
+                    strtolower($_GET['target-string'])
                 ) !== false
             ) $search_result['(NA)'] = null;
             $search_result
@@ -751,7 +751,7 @@
                                     $task
                                 ),
                                 mb_strtolower(
-                                    $_GET['target-task']
+                                    $_GET['target-string']
                                 )
                             ) !== false,
                         ARRAY_FILTER_USE_KEY
