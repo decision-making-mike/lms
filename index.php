@@ -3,6 +3,51 @@
     #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
     header('Cache-Control: no-cache');
 
+    function get_status_select_html (
+        $status_select_name,
+        $status_select_id,
+        ?callable $get_selected_attribute_html
+    ) {
+        $option_list_html = '';
+        foreach (
+            [
+                # The "(SELECT)" value is added
+                #   to be able to search
+                #   only by the task name
+                #   (then you do not change
+                #   this value, and it's
+                #   not getting matched with any
+                #   task status).
+                '(SELECT)',
+                '(NA)',
+                'PENDING',
+                'COMPLETED'
+            ]
+                as $option_value
+        ) {
+            $selected_attribute_html
+                = $get_selected_attribute_html
+                    !== null
+                    ? $get_selected_attribute_html(
+                        $option_value
+                    )
+                    : '';
+            $option_list_html
+                .= "<option {$selected_attribute_html}>{$option_value}</option>";
+        }
+
+        $id_attribute_html
+            = $status_select_id !== null
+                ? "id=\"$status_select_id\""
+                : '';
+
+        echo
+            "<select
+                {$id_attribute_html}
+                name=\"{$status_select_name}\"
+            >{$option_list_html}</select>";
+    }
+
     function get_task_list_item_content_html (
         $base_url,
         $all_tasks_list,
@@ -359,17 +404,27 @@
                         );
                 }
 
-                # Check if it's an attempt
-                #   to add an existing task.
+                # Check if the addition needs
+                #   to be rejected (so the view
+                #   not changed).
                 if (
-                    !isset($_GET['old-task-name'])
-                        && isset(
-                            $all_tasks_list[$new_task_name]
+                    # It's an attempt to add
+                    #   an existing task.
+                    (
+                        !isset(
+                            $_GET['old-task-name']
+                        )
+                            && isset(
+                                $all_tasks_list[$new_task_name]
+                            )
+                    )
+                        # The status has not been
+                        #   decided.
+                        || (
+                            $_GET['new-status']
+                                === '(SELECT)'
                         )
                 ) {
-                    # Reject the addition
-                    #   (so don't change
-                    #   the view).
                     set_header(
                         $base_url,
                         [
@@ -432,6 +487,39 @@
                     );
                 }
                 exit;
+            case 'search':
+                # Check if there's anything
+                #   to search for.
+                if (
+                    $_GET['target-string'] !== ''
+                        || $_GET['target-status']
+                            !== '(SELECT)'
+                ) {
+                    # Change the view (and then
+                    #   search).
+                    set_header(
+                        $base_url,
+                        [
+                            'view'
+                                => 'search-result-view',
+                            'target-string'
+                                => $_GET['target-string'],
+                            'target-status'
+                                => $_GET['target-status']
+                        ]
+                    );
+                    exit;
+                } else {
+                    # Don't change the view.
+                    set_header(
+                        $base_url,
+                        [
+                            'view'
+                                => $_GET['view']
+                        ]
+                    );
+                    exit;
+                }
         }
     }
 ?>
@@ -441,10 +529,20 @@
 <form method="get">
     <input
         type="hidden"
-        name="view"
-        value="search-result-view"
+        name="action"
+        value="search"
     >
     <input name="target-string">
+    <br>
+    <?php
+        echo
+            get_status_select_html(
+                'target-status',
+                null,
+                fn ($option_value) =>
+                    $option_value === '(SELECT)'
+            );
+    ?>
     <br>
     <input
         type="submit"
@@ -693,14 +791,40 @@
         $_GET['view'] === 'search-result-view'
     ):
 ?>
-    <h1>SEARCH RESULT FOR "<?php
-        echo
-            htmlspecialchars_with_ent_quotes(
-                $_GET['target-string']
-            );
-    ?>"</h1>
     <?php
+        # Show the view title.
+        $title_content_html
+            = 'SEARCH RESULT FOR THE "';
+        if ($_GET['target-string'] !== '') {
+            $title_content_html
+                .= htmlspecialchars_with_ent_quotes(
+                        $_GET['target-string']
+                )
+                    . '" STRING';
+            if (
+                $_GET['target-status']
+                    !== '(SELECT)'
+            ) {
+                $title_content_html
+                    .= ' AND THE "';
+            }
+        }
+        if (
+            $_GET['target-status']
+                !== '(SELECT)'
+        ) {
+            $title_content_html
+                .= htmlspecialchars_with_ent_quotes(
+                        $_GET['target-status']
+                )
+                    . '" STATUS';
+        }
+        echo "<h1>{$title_content_html}</h1>";
+
+        # Search and show the result.
+
         $search_result = [];
+
         # This "if" has been created solely to prevent
         #   the PHP warning about the needle being
         #   empty.
@@ -721,6 +845,7 @@
                     strtolower($_GET['target-string'])
                 ) !== false
             ) $search_result['(NA)'] = null;
+
             $search_result
                 = array_merge(
                     $search_result,
@@ -757,7 +882,47 @@
                         ARRAY_FILTER_USE_KEY
                     )
                 );
+
+            if (
+                $_GET['target-status']
+                    !== '(SELECT)'
+            ) {
+                $search_result
+                    = array_filter(
+                        $search_result,
+                        fn ($task_details) =>
+                            # Check if
+                            #   "task_details"
+                            #   exist.
+                            $task_details !== null
+                                ? $_GET['target-status']
+                                    === $task_details[1]
+                                # "(NA)" is
+                                #   the status
+                                #   of the "(NA)"
+                                #   task.
+                                : $_GET['target-status']
+                                    === '(NA)'
+                    );
+            }
+        } else if (
+            $_GET['target-status'] !== '(SELECT)'
+        ) {
+            if (
+                $_GET['target-status'] === '(NA)'
+            ) {
+                $search_result['(NA)'] = null;
+            }
+
+            $search_result
+                = array_filter(
+                    $all_tasks_list,
+                    fn ($task_details) =>
+                        $task_details[1]
+                            === $_GET['target-status']
+                );
         }
+
         if (count($search_result) > 0) {
             echo
                 get_task_list_html(
@@ -929,47 +1094,39 @@
         <br>
         <label for="new-status">STATUS</label>
         <br>
-        <select id="new-status" name="new-status">
-            <?php
-                foreach (
-                    [
-                        '(NA)',
-                        'PENDING',
-                        'COMPLETED'
-                    ]
-                        as $status
-                ) {
-                    $selected = '';
-                    if (
-                        (
-                            # Modification case.
-                            isset($_GET['task-name'])
-                                && $all_tasks_list[$_GET['task-name']][1]
-                                    === $status
-                        ) || (
-                            # Either the parent
-                            #   task addition
-                            #   case,
-                            #   or the addition
-                            #   rejection case
-                            #   (rejection
-                            #   after attempting
-                            #   to add an existing
-                            #   task).
-                            isset(
-                                $_GET['new-status']
+        <?php
+            echo
+                get_status_select_html(
+                    'new-status',
+                    'new-status',
+                    fn ($option_value) =>
+                            (
+                                # Modification case.
+                                isset(
+                                    $_GET['task-name']
+                                )
+                                    && $all_tasks_list[$_GET['task-name']][1]
+                                        === $option_value
+                            ) || (
+                                # Either the parent
+                                #   task addition
+                                #   case,
+                                #   or the addition
+                                #   rejection case
+                                #   (rejection
+                                #   after attempting
+                                #   to add an existing
+                                #   task).
+                                isset(
+                                    $_GET['new-status']
+                                )
+                                    && $_GET['new-status']
+                                        === $option_value
                             )
-                                && $_GET['new-status']
-                                    === $status
-                        )
-                    ) {
-                        $selected = 'selected';
-                    }
-                    echo
-                        "<option {$selected}>{$status}</option>";
-                }
-            ?>
-        </select>
+                                ? 'selected'
+                                : ''
+                );
+        ?>
         <br>
         <input
             type="submit"
