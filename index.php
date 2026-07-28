@@ -1,7 +1,7 @@
 <?php
     # Tell Lynx to not use cache
     #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
-    header('Cache-Control: no-cache');
+    #header('Cache-Control: no-cache');
 
     function get_status_select_html (
         $status_select_name,
@@ -276,8 +276,9 @@
     }
 
     # Action handling.
-    if (isset($_GET['action'])) {
-        switch ($_GET['action']) {
+    if (isset($_GET['action']) || isset($_POST['action'])) {
+        $action = $_GET['action'] ?? $_POST['action'];
+        switch ($action) {
             case 'removal-decision':
                 if (
                     isset(
@@ -339,10 +340,10 @@
             case 'modification-addition-decision':
                 if (
                     isset(
-                        $_GET['modification-addition-confirmation-submit']
+                        $_POST['modification-addition-confirmation-submit']
                     )
                 ) {
-                    $query_parameters = $_GET;
+                    $query_parameters = $_POST;
                     $query_parameters['action']
                         = 'modification-addition';
                     set_header(
@@ -352,18 +353,18 @@
                     exit;
                 } else if (
                     isset(
-                        $_GET['modification-addition-cancellation-submit']
+                        $_POST['modification-addition-cancellation-submit']
                     )
                 ) {
                     if (
-                        isset($_GET['old-task-name'])
+                        isset($_POST['old-task-name'])
                     ) {
                         # Modification case.
                         set_header(
                             $base_url,
                             [
                                 'task-name'
-                                    => $_GET['old-task-name']
+                                    => $_POST['old-task-name']
                             ]
                         );
                         exit;
@@ -1010,7 +1011,7 @@
             }
         ?>
     </h1>
-    <form method="get">
+    <form method="post">
         <input
             type="hidden"
             name="action"
