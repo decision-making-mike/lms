@@ -53,7 +53,7 @@
         $all_tasks_list,
         $task_name,
         ?callable
-            $get_decorated_task_list_item_content_html
+            $get_task_list_item_content_decoration_html
     ) {
         $task_name_html
             = htmlspecialchars_with_ent_quotes(
@@ -122,19 +122,19 @@
                 ];
         }
 
-        if (
-            $get_decorated_task_list_item_content_html
+        $decoration_html
+            = $get_task_list_item_content_decoration_html
                 !== null
-        ) {
-            $task_name_html
-                = $get_decorated_task_list_item_content_html(
-                    $task_name_html
-                );
-        }
+                ? $get_task_list_item_content_decoration_html(
+                    $task_name
+                )
+                    . ' '
+                : ' ';
 
         return
             "({$task_status_html}) "
             . $child_task_pending_information_html
+            . $decoration_html
             . "<a href=\"{$task_view_url_html}\">"
             . $task_name_html
             . '</a>';
@@ -145,7 +145,7 @@
         $task_list,
         $all_tasks_list,
         callable
-            $get_decorated_task_list_item_content_html
+            $get_task_list_item_content_decoration_html
                 = null
     ) {
         $task_list_content_html = '';
@@ -155,7 +155,7 @@
                     $base_url,
                     $all_tasks_list,
                     $task_name,
-                    $get_decorated_task_list_item_content_html
+                    $get_task_list_item_content_decoration_html
                 );
             $task_list_content_html
                 .= "<li>{$task_list_item_content_html}</li>";
@@ -1155,16 +1155,27 @@
                     $all_tasks_list
                 ),
                 $all_tasks_list,
-                # Check if there is no task
-                #   with the parent task name.
-                fn ($task_html)
-                    =>
-                        $details[0] !== '(NA)'
-                            && !isset(
-                                $all_tasks_list[$details[0]]
-                            )
-                                ? "(No task with the parent task name) {$task_html}"
-                                : $task_html
+                function ($task_name)
+                    use ($all_tasks_list) {
+                    if ($task_name !== '(NA)') {
+                        $parent_task_name
+                            = $all_tasks_list[$task_name][0];
+                        return
+                            # Check if there is no
+                            #   task
+                            #   with the parent
+                            #   task name.
+                            $parent_task_name
+                                !== '(NA)'
+                                && !isset(
+                                    $all_tasks_list[$parent_task_name]
+                                )
+                                    ? '(NO TASK WITH THE PARENT TASK NAME)'
+                                    : '';
+                    } else {
+                        return '';
+                    }
+                }
             );
     ?>
 <?php endif; ?>
