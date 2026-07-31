@@ -94,6 +94,8 @@ This is the definition of the user API (it is called "public API" by the [Semant
 
 There SHOULD be used the function `htmlspecialchars_with_ent_quotes` instead of the function `htmlspecialchars`. For details, see the description of the `htmlspecialchars_with_ent_quotes` function in the code.
 
+There MUST NOT be used [arrow functions](https://www.php.net/manual/en/functions.arrow.php). For reasons, see commit 6fcc38ab03ccdbf8bce0942d5a3cd03510d4601e. Instead, there can be used [anonymous functions](https://www.php.net/manual/en/functions.anonymous.php).
+
 ### Code formatting
 
 The length of a line in the `*.php` files SHOULD be at most 50 characters.
