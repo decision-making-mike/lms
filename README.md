@@ -125,3 +125,7 @@ DELN   Delete next     char  -  Ctrl-d, Delete, Remove (see note 1)
 where ["note 1"](https://lynx.invisible-island.net/lynx_help/keystrokes/bashlike_edit_help.html#note_1) is
 
 > "next" means the character "under" a box or underline style cursor; it means "to the immediate right of" an I-beam (between characters) type cursor.
+
+#### Lynx colors
+
+If you don't like the default colors in Lynx, you can try to run Lynx with [the `-nocolor` flag](https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html#Invoking). It makes Lynx render LMS in greyscale. The colors may differ depending on the terminal.
