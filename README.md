@@ -110,7 +110,7 @@ In the course of developing LMS, the developer might think that it would be bene
 
 ### Lynx usage notes
 
-#### `DELETE` and `BACKSPACE` keys behavior
+#### Lynx `DELETE` and `BACKSPACE` keys behavior
 
 If one has set the default, or the alternative key bindings in Lynx, one might note that the `BACKSPACE` and `DELETE` keys behave the same (at least in a text field). Either removes the character before the cursor. To quote the [documentation](https://lynx.invisible-island.net/lynx_help/keystrokes/edit_help.html) (both for the default, and the alternative key bindings):
 
