@@ -3,6 +3,35 @@
     #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
     header('Cache-Control: no-cache');
 
+    function get_task_path_html (
+        $na_task_id,
+        $task_id,
+        $all_tasks_list
+    ) {
+        $id = $task_id;
+        $reversed_task_path_item_list = [];
+        while ($id !== $na_task_id) {
+            $reversed_task_path_item_list[]
+                = $all_tasks_list[$id]['name'];
+            $id
+                = $all_tasks_list[$id]['parent-task-id'];
+        }
+        $reversed_task_path_item_list[] = '(NA)';
+        $task_path_item_list
+            = array_reverse(
+                $reversed_task_path_item_list
+            );
+        $task_path
+            = implode(
+                ' / ',
+                $task_path_item_list
+            );
+        return
+            htmlspecialchars_with_ent_quotes(
+                $task_path
+            );
+    }
+
     function get_status_select_html (
         $status_select_name,
         $status_select_id,
@@ -49,21 +78,16 @@
     }
 
     function get_task_list_item_content_html (
+        $na_task_id,
         $base_url,
         $all_tasks_list,
-        $task_name,
-        ?callable
-            $get_task_list_item_content_decoration_html
+        $task_id,
+        $path_showing
     ) {
-        $task_name_html
-            = htmlspecialchars_with_ent_quotes(
-                $task_name
-            );
-
         $query
             = http_build_query(
                 [
-                    'task-name' => $task_name
+                    'task-id' => $task_id
                 ]
             );
         $task_view_url = "{$base_url}?{$query}";
@@ -73,10 +97,10 @@
             );
 
         $task_status_html
-            = $task_name === '(NA)'
+            = $task_id === $na_task_id
                 ? '(NA)'
                 : htmlspecialchars_with_ent_quotes(
-                    $all_tasks_list[$task_name][1]
+                    $all_tasks_list[$task_id]['status']
                 );
 
         # Get the information whether any
@@ -84,29 +108,34 @@
         #   is pending (recurse to the leaf
         #   tasks).
         $child_task_pending_information_html = '';
-        $pending_task_list
+        $pending_task_id_list
             = [
-                $task_name
+                $task_id
             ];
-        while (count($pending_task_list) !== 0) {
-            $t = array_pop($pending_task_list);
+        while (
+            count($pending_task_id_list) !== 0
+        ) {
+            $p = array_pop($pending_task_id_list);
 
-            $child_task_list = [];
+            $child_task_id_list = [];
             foreach (
-                $all_tasks_list as $tt => $details
+                $all_tasks_list as $pp => $details
             ) {
-                # If "$tt" is a child task
-                #   of "$t".
-                if ($details[0] === $t) {
+                # If "pp" is a child task of "p".
+                if (
+                    $details['parent-task-id']
+                        === $p
+                ) {
                     if (
-                        $details[1] === 'PENDING'
+                        $details['status']
+                            === 'PENDING'
                     ) {
                         $child_task_pending_information_html
                             = '(CHILD TASK PENDING) ';
                         break;
                     }
 
-                    $child_task_list[] = $tt;
+                    $child_task_id_list[] = $pp;
                 }
             }
             if (
@@ -115,47 +144,47 @@
             ) {
                 break;
             }
-            $pending_task_list
+            $pending_task_id_list
                 = [
-                    ...$pending_task_list,
-                    ...$child_task_list
+                    ...$pending_task_id_list,
+                    ...$child_task_id_list
                 ];
         }
-
-        $decoration_html
-            = $get_task_list_item_content_decoration_html
-                !== null
-                ? $get_task_list_item_content_decoration_html(
-                    $task_name
-                )
-                    . ' '
-                : ' ';
 
         return
             "({$task_status_html}) "
             . $child_task_pending_information_html
-            . $decoration_html
             . "<a href=\"{$task_view_url_html}\">"
-            . $task_name_html
+            . (
+                $path_showing
+                    ? get_task_path_html(
+                        $na_task_id,
+                        $task_id,
+                        $all_tasks_list
+                    )
+                    : htmlspecialchars_with_ent_quotes(
+                        $all_tasks_list[$task_id]['name']
+                    )
+            )
             . '</a>';
     }
 
     function get_task_list_html (
+        $na_task_id,
         $base_url,
         $task_list,
         $all_tasks_list,
-        callable
-            $get_task_list_item_content_decoration_html
-                = null
+        $path_showing = true
     ) {
         $task_list_content_html = '';
-        foreach ($task_list as $task_name => $_) {
+        foreach ($task_list as $task_id => $_) {
             $task_list_item_content_html
                 = get_task_list_item_content_html(
+                    $na_task_id,
                     $base_url,
                     $all_tasks_list,
-                    $task_name,
-                    $get_task_list_item_content_decoration_html
+                    $task_id,
+                    $path_showing
                 );
             $task_list_content_html
                 .= "<li>{$task_list_item_content_html}</li>";
@@ -182,14 +211,16 @@
         $line_list = [];
         foreach (
             $task_list
-                as $task_name => $task_details
+                as $task_id => $task_details
         ) {
             $line
                 = implode(
                     "\t",
                     [
-                        $task_name,
-                        ...$task_details
+                        $task_id,
+                        ...array_values(
+                            $task_details
+                        )
                     ]
                 );
             $line_list[] = $line;
@@ -221,6 +252,7 @@
 
     $configuration = require_once 'config.php';
     $base_url = "http://{$_SERVER['HTTP_HOST']}";
+    $na_task_id = 0;
 
     $all_tasks_list = [];
     # If the task file doesn't exist, issue
@@ -235,43 +267,103 @@
             "Error: there does not exist a file at {$configuration['task-file-path']}";
         exit;
     } else {
-        # Transition from the old format
-        #   of the task file (without task
-        #   statuses) to the new one (with task
-        #   statuses).
-        $old = false;
-
         $line_list
             = file(
                 $configuration['task-file-path'],
                 FILE_IGNORE_NEW_LINES
             );
-        foreach ($line_list as $line) {
-            $fields = explode("\t", $line);
-            $task = $fields[0];
-            $details = array_slice($fields, 1);
 
-            # Transition from the old format
-            #   of the task file (without task
-            #   statuses) to the new one
-            #   (with task statuses).
-            if (count($details) === 1) {
-                $details[1] = '(NA)';
-                $old = true;
+        # Transition from the old formats
+        #   of the task file (without task
+        #   statuses or IDs) to the newest one
+        #   (with task statuses and IDs).
+
+        $first_line_fields
+            = explode("\t", $line_list[0]);
+        $no_task_status_format
+            = count($first_line_fields) === 2;
+        $no_task_id_format
+            = count($first_line_fields) === 3;
+
+        # This outside "if" has been employed
+        #   to not repeat code in the now-inner
+        #   "if".
+        if (
+            $no_task_status_format
+                || $no_task_id_format
+        ) {
+            # ID "0" is reserved for task "(NA)".
+            $task_id = 1;
+
+            if ($no_task_status_format) {
+                foreach ($line_list as $line) {
+                    $fields
+                        = explode("\t", $line);
+                    $tmp[$fields[0]]
+                        = [
+                            'id' => (string)$task_id,
+                            'parent-task-name'
+                                => $fields[1],
+                            'status' => '(NA)'
+                        ];
+                    ++$task_id;
+                }
+            } else if ($no_task_id_format) {
+                foreach ($line_list as $line) {
+                    $fields
+                        = explode("\t", $line);
+                    $tmp[$fields[0]]
+                        = [
+                            'id' => (string)$task_id,
+                            'parent-task-name'
+                                => $fields[1],
+                            'status'
+                                => $fields[2]
+                        ];
+                    ++$task_id;
+                }
             }
 
-            $all_tasks_list[$task] = $details;
-        }
+            # Replace parent task names
+            #   with parent task IDs, and place
+            #   task IDs and names
+            #   on the appropriate places.
+            foreach (
+                $tmp
+                    as $task_name => $task_details
+            ) {
+                $all_tasks_list[$task_details['id']]
+                    = [
+                        'name' => $task_name,
+                        'parent-task-id'
+                            => (
+                                $task_details['parent-task-name']
+                                    === '(NA)'
+                                    ? ((int)$na_task_id)
+                                    : ((int)$tmp[$task_details['parent-task-name']]['id'])
+                            ),
+                        'status'
+                            => $task_details['status']
+                    ];
+            }
 
-        # Transition from the old format
-        #   of the task file (without task
-        #   statuses) to the new one (with task
-        #   statuses).
-        if ($old) {
             save_tasks(
                 $configuration['task-file-path'],
                 $all_tasks_list
             );
+        } else {
+            # Get tasks normally.
+            foreach ($line_list as $line) {
+                $fields = explode("\t", $line);
+                $all_tasks_list[$fields[0]]
+                    = [
+                        'name' => $fields[1],
+                        'parent-task-id'
+                            => (int)$fields[2],
+                        'status'
+                            => $fields[3]
+                    ];
+            }
         }
     }
 
@@ -288,8 +380,8 @@
                         $base_url,
                         [
                             'action' => 'removal',
-                            'task-name'
-                                => $_GET['task-name']
+                            'task-id'
+                                => $_GET['task-id']
                         ]
                     );
                     exit;
@@ -301,8 +393,8 @@
                     set_header(
                         $base_url,
                         [
-                            'task-name'
-                                => $_GET['task-name']
+                            'task-id'
+                                => $_GET['task-id']
                         ]
                     );
                     exit;
@@ -314,7 +406,8 @@
                 #   as parent task names. This way
                 #   those occurrences remain
                 #   in the file (in the views
-                #   they aren't part of links).
+                #   they aren't part of links,
+                #   but are just plain text).
                 #   If the user need so
                 #   in the future, they will
                 #   possibly be able to recreate
@@ -327,7 +420,9 @@
                 #   view in which the user will be
                 #   able to see the former
                 #   child tasks.
-                unset($all_tasks_list[$_GET['task-name']]);
+                unset(
+                    $all_tasks_list[(int)$_GET['task-id']]
+                );
 
                 save_tasks(
                     $configuration['task-file-path'],
@@ -356,14 +451,14 @@
                     )
                 ) {
                     if (
-                        isset($_GET['old-task-name'])
+                        isset($_GET['old-task-id'])
                     ) {
                         # Modification case.
                         set_header(
                             $base_url,
                             [
-                                'task-name'
-                                    => $_GET['old-task-name']
+                                'task-id'
+                                    => $_GET['old-task-id']
                             ]
                         );
                         exit;
@@ -375,9 +470,6 @@
                 }
             case 'modification-addition':
                 $new_task_name = $_GET['new-task-name'];
-                $new_parent_task_name
-                    = $_GET['new-parent-task-name'];
-                $new_status = $_GET['new-status'];
                 $reserved_character_replacements
                     = [
                         "\t" => '\t',
@@ -396,32 +488,40 @@
                             $replacement,
                             $new_task_name
                         );
-                    $new_parent_task_name
-                        = str_replace(
-                            $character,
-                            $replacement,
-                            $new_parent_task_name
-                        );
                 }
 
-                # Check if the addition needs
-                #   to be rejected (so the view
-                #   not changed).
+                # Check if the action needs to be
+                #   rejected (so the view not
+                #   changed).
+                $same_name_sibling_task_exists
+                    = false;
+                foreach (
+                    $all_tasks_list
+                        as $_ => $task_details
+                ) {
+                    if (
+                        # It's a sibling task.
+                        $task_details['parent-task-id']
+                            === ((int)$_GET['new-task-parent-task-id'])
+                            && $task_details['name']
+                                === $new_task_name
+                    ) {
+                        $same_name_sibling_task_exists
+                            = true;
+                        break;
+                    }
+                }
                 if (
                     # It's an attempt to add
-                    #   an existing task.
-                    (
-                        !isset(
-                            $_GET['old-task-name']
-                        )
-                            && isset(
-                                $all_tasks_list[$new_task_name]
-                            )
-                    )
-                        # The status has not been
-                        #   decided.
+                    #   a task with the same
+                    #   name as one of its
+                    #   sibling tasks.
+                    $same_name_sibling_task_exists
+                        # It's an attempt to add
+                        #   a task without its
+                        #   status decided.
                         || (
-                            $_GET['new-status']
+                            $_GET['new-task-status']
                                 === '(SELECT)'
                         )
                 ) {
@@ -432,45 +532,34 @@
                                 => 'modification-addition-form-view',
                             'new-task-name'
                                 => $new_task_name,
-                            'new-parent-task-name'
-                                => $new_parent_task_name,
-                            'new-status'
-                                => $new_status
+                            'new-task-parent-task-id'
+                                => $_GET['new-task-parent-task-id'],
+                            'new-task-status'
+                                => $_GET['new-task-status']
                         ]
                     );
                 } else {
-                    # Check if it's
-                    #   the modification case.
-                    if (
-                        isset($_GET['old-task-name'])
-                    ) {
-                        unset(
-                            $all_tasks_list[$_GET['old-task-name']]
-                        );
-                        # Modify the references
-                        #   of the name
-                        #   of the task as parent
-                        #   task names.
-                        foreach (
-                            $all_tasks_list
-                                as $task
-                                    => $details
-                        ) {
-                            if (
-                                $details[0]
-                                    === $_GET['old-task-name']
-                            ) {
-                                $all_tasks_list[$task][0]
-                                    = $new_task_name;
-                            }
-                        }
-                    }
-                    # Either the modification
-                    #   or addition case.
-                    $all_tasks_list[$new_task_name]
+                    $task_id
+                        = isset(
+                            $_GET['old-task-id']
+                        )
+                            # Modification case.
+                            ? ((int)$_GET['old-task-id'])
+                            # Addition case.
+                            : max(
+                                array_keys(
+                                    $all_tasks_list
+                                )
+                            )
+                                + 1;
+                    $all_tasks_list[$task_id]
                         = [
-                            $new_parent_task_name,
-                            $new_status
+                            'name'
+                                => $new_task_name,
+                            'parent-task-id'
+                                => $_GET['new-task-parent-task-id'],
+                            'status'
+                                => $_GET['new-task-status']
                         ];
 
                     save_tasks(
@@ -481,8 +570,7 @@
                     set_header(
                         $base_url,
                         [
-                            'task-name'
-                                => $new_task_name
+                            'task-id' => $task_id
                         ]
                     );
                 }
@@ -579,10 +667,12 @@
     <!-- Task view (default view). -->
     <h1>
         <?php
-            if (isset($_GET['task-name'])) {
+            if (isset($_GET['task-id'])) {
                 echo
-                    htmlspecialchars_with_ent_quotes(
-                        $_GET['task-name']
+                    get_task_path_html(
+                        $na_task_id,
+                        (int)$_GET['task-id'],
+                        $all_tasks_list
                     );
             } else {
                 echo '(NA)';
@@ -592,12 +682,13 @@
     <h2>STATUS</h2>
     <?php
         if (
-            isset($_GET['task-name'])
-                && $_GET['task-name'] !== '(NA)'
+            isset($_GET['task-id'])
+                && ((int)$_GET['task-id'])
+                    !== $na_task_id
         ) {
             echo
                 htmlspecialchars_with_ent_quotes(
-                    $all_tasks_list[$_GET['task-name']][1]
+                    $all_tasks_list[(int)$_GET['task-id']]['status']
                 );
         } else {
             echo '(NA)';
@@ -606,18 +697,20 @@
     <h2>PARENT TASK</h2>
     <?php
         if (
-            isset($_GET['task-name'])
-                && $_GET['task-name'] !== '(NA)'
+            isset($_GET['task-id'])
+                && ((int)$_GET['task-id'])
+                    !== $na_task_id
         ) {
-            $parent_task_name
-                = $all_tasks_list[$_GET['task-name']][0];
-            if ($parent_task_name === '(NA)') {
+            $parent_task_id
+                = $all_tasks_list[(int)$_GET['task-id']]['parent-task-id'];
+            if ($parent_task_id === $na_task_id) {
                 # This is a second-level task,
-                #   so we don't include the "task"
-                #   parameter in the query. This
-                #   way we, so to say, unset
-                #   the task (= unify
-                #   its two representations).
+                #   so we don't include
+                #   the "task-id" parameter
+                #   in the query. This way we, so
+                #   to say, unset the task
+                #   (= unify its two
+                #   representations).
                 $url = $base_url;
                 $label = '(NA)';
                 echo
@@ -633,88 +726,77 @@
             } else {
                 # This is a third-or-lower-level
                 #   task.
-                # Check if there exists a task
-                #   with the parent task name.
-                if (isset($all_tasks_list[$parent_task_name])) {
-                    $query
-                        = http_build_query(
-                            [
-                                'task-name'
-                                    => $parent_task_name
-                            ]
-                        );
-                    $url = "{$base_url}?{$query}";
-                    $label = $parent_task_name;
-                    echo
-                        "<a href=\""
-                            . htmlspecialchars_with_ent_quotes(
-                                $url
-                            )
-                            . "\">"
-                            . htmlspecialchars_with_ent_quotes(
-                                $label
-                            )
-                            . "</a>";
-                } else {
-                    $query
-                        = http_build_query(
-                            [
-                                'view'
-                                    => 'modification-addition-form-view',
-                                'new-task-name'
-                                    => $parent_task_name
-                            ]
-                        );
-                    $url = "{$base_url}?{$query}";
-                    echo
-                        htmlspecialchars_with_ent_quotes(
-                            $parent_task_name
+                $query
+                    = http_build_query(
+                        [
+                            'task-id'
+                                => $parent_task_id
+                        ]
+                    );
+                $url = "{$base_url}?{$query}";
+                $label
+                    = $all_tasks_list[$parent_task_id]['name'];
+                echo
+                    "<a href=\""
+                        . htmlspecialchars_with_ent_quotes(
+                            $url
                         )
-                            . " (<a href=\""
-                            . htmlspecialchars_with_ent_quotes(
-                                $url
-                            )
-                            . "\">ADD</a>)";
-                }
+                        . "\">"
+                        . htmlspecialchars_with_ent_quotes(
+                            $label
+                        )
+                        . "</a>";
             }
         } else {
+            # This is task "(NA)" (the only
+            #   first-level task).
             echo '(NA)';
         }
     ?>
     <h2>CHILD TASKS</h2>
     <?php
-        # The first task is represented
-        #   as an unset task in the code
-        #   and the URL. But the occurrences
-        #   of its name in the file are
-        #   represented there as "(NA)".
-        #   Here we unify these representations.
-        $task = $_GET['task-name'] ?? '(NA)';
+        # Task "(NA)" is represented as an unset
+        #   task in the code and the URL.
+        #   But the occurrences of its ID
+        #   in the file are represented there
+        #   as "0". Here we unify these
+        #   representations.
+        $task_id
+            = (
+                isset($_GET['task-id'])
+                    ? ((int)$_GET['task-id'])
+                    : $na_task_id
+            );
 
         $child_task_list
             = array_filter(
                 $all_tasks_list,
-                fn ($details) =>
-                    $details[0] === $task
+                fn ($task_details) =>
+                    $task_details['parent-task-id']
+                        === $task_id
             );
+
         if (count($child_task_list) === 0) {
             echo '(NA)';
         } else {
             echo
                 get_task_list_html(
+                    $na_task_id,
                     $base_url,
                     $child_task_list,
-                    $all_tasks_list
+                    $all_tasks_list,
+                    false
                 );
         }
     ?>
     <h2>ACTIONS</h2>
     <ul>
         <?php
+            # Check if it's not task "(NA)".
             if (
-                isset($_GET['task-name'])
-                    && $_GET['task-name']
-                        !== '(NA)'
+                isset($_GET['task-id'])
+                    && ((int)$_GET['task-id'])
+                        !== $na_task_id
             ):
         ?>
             <li>
@@ -724,8 +806,8 @@
                             [
                                 'view'
                                     => 'modification-addition-form-view',
-                                'task-name'
-                                    => $_GET['task-name']
+                                'task-id'
+                                    => $_GET['task-id']
                             ]
                         );
                     $url = "{$base_url}?{$query}";
@@ -746,8 +828,8 @@
                             [
                                 'view'
                                     => 'removal-confirmation-form-view',
-                                'task-name'
-                                    => $_GET['task-name']
+                                'task-id'
+                                    => $_GET['task-id']
                             ]
                         );
                     $url = "{$base_url}?{$query}";
@@ -769,9 +851,9 @@
                         [
                             'view'
                                 => 'modification-addition-form-view',
-                            'new-parent-task-name'
-                                => $_GET['task-name']
-                                    ?? '(NA)'
+                            'new-task-parent-task-id'
+                                => $_GET['task-id']
+                                    ?? $na_task_id
                         ]
                     );
                 $url = "{$base_url}?{$query}";
@@ -829,9 +911,9 @@
         #   the PHP warning about the needle being
         #   empty.
         if ($_GET['target-string'] !== '') {
-            # Check the task '(NA)' (it's not
-            #   in the task file, so we need to check
-            #   it separately).
+            # Check task "(NA)" (it's not
+            #   in the task file, so we need
+            #   to check it separately).
             # I'm not sure if the use
             #   of "mb_strpos" and "mb_strtolower"
             #   won't add to the confusion.
@@ -844,14 +926,13 @@
                     '(na)',
                     strtolower($_GET['target-string'])
                 ) !== false
-            ) $search_result['(NA)'] = null;
+            ) $search_result[$na_task_id] = null;
 
             $search_result
-                = array_merge(
-                    $search_result,
-                    array_filter(
+                = $search_result
+                    + array_filter(
                         $all_tasks_list,
-                        fn ($task) =>
+                        fn ($task_details) =>
                             # As far as I can say,
                             #   with UTF-8
                             #   "strpos"
@@ -873,15 +954,13 @@
                             #   using "mb_strpos".
                             mb_strpos(
                                 mb_strtolower(
-                                    $task
+                                    $task_details['name']
                                 ),
                                 mb_strtolower(
                                     $_GET['target-string']
                                 )
-                            ) !== false,
-                        ARRAY_FILTER_USE_KEY
-                    )
-                );
+                            ) !== false
+                    );
 
             if (
                 $_GET['target-status']
@@ -893,10 +972,12 @@
                         fn ($task_details) =>
                             # Check if
                             #   "task_details"
-                            #   exist.
+                            #   exist. They won't
+                            #   in the case
+                            #   of task "(NA)".
                             $task_details !== null
                                 ? $_GET['target-status']
-                                    === $task_details[1]
+                                    === $task_details['status']
                                 # "(NA)" is
                                 #   the status
                                 #   of the "(NA)"
@@ -911,14 +992,15 @@
             if (
                 $_GET['target-status'] === '(NA)'
             ) {
-                $search_result['(NA)'] = null;
+                $search_result[$na_task_id]
+                    = null;
             }
 
             $search_result
                 = array_filter(
                     $all_tasks_list,
                     fn ($task_details) =>
-                        $task_details[1]
+                        $task_details['status']
                             === $_GET['target-status']
                 );
         }
@@ -926,6 +1008,7 @@
         if (count($search_result) > 0) {
             echo
                 get_task_list_html(
+                    $na_task_id,
                     $base_url,
                     $search_result,
                     $all_tasks_list
@@ -945,7 +1028,7 @@
             echo
                 'REMOVAL OF "'
                     . htmlspecialchars_with_ent_quotes(
-                        $_GET['task-name']
+                        $all_tasks_list[(int)$_GET['task-id']]['name']
                     )
                     . '"';
         ?>
@@ -953,7 +1036,7 @@
     <p>Do you really want to remove "<?php
         echo
             htmlspecialchars_with_ent_quotes(
-                $_GET['task-name']
+                $all_tasks_list[(int)$_GET['task-id']]['name']
             );
     ?>"?</p>
     <form method="get">
@@ -964,11 +1047,11 @@
         >
         <input
             type="hidden"
-            name="task-name"
+            name="task-id"
             value="<?php
                 echo
                     htmlspecialchars_with_ent_quotes(
-                        $_GET['task-name']
+                        $_GET['task-id']
                     );
             ?>"
         >
@@ -998,11 +1081,11 @@
     <h1>
         <?php
             # Check if it's the modification case.
-            if (isset($_GET['task-name'])) {
+            if (isset($_GET['task-id'])) {
                 echo
                     'MODIFICATION OF "'
                         . htmlspecialchars_with_ent_quotes(
-                            $_GET['task-name']
+                            $all_tasks_list[(int)$_GET['task-id']]['name']
                         )
                         . '"';
             } else {
@@ -1018,15 +1101,15 @@
         >
         <?php
             # Check if it's the modification case.
-            if (isset($_GET['task-name'])):
+            if (isset($_GET['task-id'])):
         ?>
             <input
                 type="hidden"
-                name="old-task-name"
+                name="old-task-id"
                 value="<?php
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['task-name']
+                            $_GET['task-id']
                         );
                 ?>"
             >
@@ -1037,20 +1120,16 @@
             id="new-task-name"
             name="new-task-name"
             value="<?php
-                if (isset($_GET['task-name'])) {
+                if (isset($_GET['task-id'])) {
                     # Modification case.
                     echo
                         htmlspecialchars_with_ent_quotes(
-                            $_GET['task-name']
+                            $all_tasks_list[(int)$_GET['task-id']]['name']
                         );
                 } else if (
                     isset($_GET['new-task-name'])
                 ) {
-                    # Either parent task addition
-                    #   case, or addition
-                    #   rejection case (rejection
-                    #   after attempting to add
-                    #   an existing task).
+                    # Addition rejection case.
                     echo
                         htmlspecialchars_with_ent_quotes(
                             $_GET['new-task-name']
@@ -1061,66 +1140,72 @@
         >
         <br>
         <label
-            for="new-parent-task-name"
+            for="new-task-parent-task-id"
         >PARENT TASK</label>
         <br>
-        <input
-            id="new-parent-task-name"
-            name="new-parent-task-name"
-            value="<?php
-                if (isset($_GET['task-name'])) {
-                    # Modification case.
-                    echo
-                        htmlspecialchars_with_ent_quotes(
-                            $all_tasks_list[$_GET['task-name']][0]
-                        );
-                } else if (
-                    isset(
-                        $_GET['new-parent-task-name']
-                    )
-                ) {
-                    # Addition rejection case
-                    #   (rejection
-                    #   after attempting to add
-                    #   an existing task).
-                    echo
-                        htmlspecialchars_with_ent_quotes(
-                            $_GET['new-parent-task-name']
-                        );
-                }
-            ?>"
-            size="80"
+        <select
+            id="new-task-parent-task-id"
+            name="new-task-parent-task-id"
         >
+            <?php
+                $html = '';
+                foreach (
+                    [
+                        $na_task_id => null
+                    ]
+                        + $all_tasks_list
+                        as $task_id => $_
+                ) {
+                    $html
+                        .= '<option value="'
+                            . htmlspecialchars_with_ent_quotes(
+                                $task_id
+                            )
+                            . '"'
+                            . (
+                                $task_id
+                                    === $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
+                                    ? ' selected'
+                                    : ''
+                            )
+                            . '>'
+                            . get_task_path_html(
+                                $na_task_id,
+                                $task_id,
+                                $all_tasks_list
+                            )
+                            . '</option>';
+                }
+                echo $html;
+            ?>
+        </select>
         <br>
-        <label for="new-status">STATUS</label>
+        <label
+            for="new-task-status"
+        >STATUS</label>
         <br>
         <?php
             echo
                 get_status_select_html(
-                    'new-status',
-                    'new-status',
+                    'new-task-status',
+                    'new-task-status',
                     fn ($option_value) =>
                             (
-                                # Modification case.
+                                # Modification
+                                #   case.
                                 isset(
-                                    $_GET['task-name']
+                                    $_GET['task-id']
                                 )
-                                    && $all_tasks_list[$_GET['task-name']][1]
+                                    && $all_tasks_list[(int)$_GET['task-id']]['status']
                                         === $option_value
                             ) || (
-                                # Either the parent
-                                #   task addition
-                                #   case,
-                                #   or the addition
-                                #   rejection case
-                                #   (rejection
-                                #   after attempting
-                                #   to add an existing
-                                #   task).
+                                # Addition
+                                #   rejection
+                                #   case.
                                 isset(
-                                    $_GET['new-status']
+                                    $_GET['new-task-status']
                                 )
-                                    && $_GET['new-status']
+                                    && $_GET['new-task-status']
                                         === $option_value
                             )
                                 ? 'selected'
@@ -1147,35 +1232,15 @@
     <?php
         echo
             get_task_list_html(
+                $na_task_id,
                 $base_url,
                 array_merge(
                     [
-                        '(NA)' => null
+                        $na_task_id => null
                     ],
                     $all_tasks_list
                 ),
-                $all_tasks_list,
-                function ($task_name)
-                    use ($all_tasks_list) {
-                    if ($task_name !== '(NA)') {
-                        $parent_task_name
-                            = $all_tasks_list[$task_name][0];
-                        return
-                            # Check if there is no
-                            #   task
-                            #   with the parent
-                            #   task name.
-                            $parent_task_name
-                                !== '(NA)'
-                                && !isset(
-                                    $all_tasks_list[$parent_task_name]
-                                )
-                                    ? '(NO TASK WITH THE PARENT TASK NAME)'
-                                    : '';
-                    } else {
-                        return '';
-                    }
-                }
+                $all_tasks_list
             );
     ?>
 <?php endif; ?>
