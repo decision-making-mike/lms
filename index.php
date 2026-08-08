@@ -1162,24 +1162,37 @@
                             ? $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
                             # Addition case.
                             : (int)$_GET['new-task-parent-task-id'];
+                    $list[$task_id]
+                        = get_task_path_html(
+                            $na_task_id,
+                            $task_id,
+                            $all_tasks_list
+                        );
+                }
+                asort(
+                    $list,
+                    SORT_NATURAL
+                        | SORT_FLAG_CASE
+                );
+                foreach (
+                    $list
+                        as $new_task_parent_task_id
+                            => $new_task_parent_task_path_html
+                ) {
                     $html
                         .= '<option value="'
                             . htmlspecialchars_with_ent_quotes(
-                                $task_id
+                                $new_task_parent_task_id
                             )
                             . '"'
                             . (
-                                $task_id
+                                $new_task_parent_task_id
                                     === $id_of_parent_task_to_select
                                     ? ' selected'
                                     : ''
                             )
                             . '>'
-                            . get_task_path_html(
-                                $na_task_id,
-                                $task_id,
-                                $all_tasks_list
-                            )
+                            . $new_task_parent_task_path_html
                             . '</option>';
                 }
                 echo $html;
