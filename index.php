@@ -1156,6 +1156,12 @@
                         + $all_tasks_list
                         as $task_id => $_
                 ) {
+                    $id_of_parent_task_to_select
+                        = isset($_GET['task-id'])
+                            # Modification case.
+                            ? $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
+                            # Addition case.
+                            : (int)$_GET['new-task-parent-task-id'];
                     $html
                         .= '<option value="'
                             . htmlspecialchars_with_ent_quotes(
@@ -1164,7 +1170,7 @@
                             . '"'
                             . (
                                 $task_id
-                                    === $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
+                                    === $id_of_parent_task_to_select
                                     ? ' selected'
                                     : ''
                             )
