@@ -1253,12 +1253,10 @@
             get_task_list_html(
                 $na_task_id,
                 $base_url,
-                array_merge(
-                    [
-                        $na_task_id => null
-                    ],
-                    $all_tasks_list
-                ),
+                [
+                    $na_task_id => null
+                ]
+                    + $all_tasks_list,
                 $all_tasks_list
             );
     ?>
