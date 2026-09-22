@@ -3,258 +3,22 @@
     #   (see https://lynx.invisible-island.net/lynx_help/Lynx_users_guide.html).
     header('Cache-Control: no-cache');
 
-    function get_task_path_html (
-        $na_task_id,
-        $task_id,
-        $all_tasks_list
-    ) {
-        $id = $task_id;
-        $reversed_task_path_item_list = [];
-        while ($id !== $na_task_id) {
-            $reversed_task_path_item_list[]
-                = $all_tasks_list[$id]['name'];
-            $id
-                = $all_tasks_list[$id]['parent-task-id'];
-        }
-        $reversed_task_path_item_list[] = '(NA)';
-        $task_path_item_list
-            = array_reverse(
-                $reversed_task_path_item_list
-            );
-        $task_path
-            = implode(
-                ' / ',
-                $task_path_item_list
-            );
-        return
-            htmlspecialchars_with_ent_quotes(
-                $task_path
-            );
-    }
-
-    function get_status_select_html (
-        $status_select_name,
-        $status_select_id,
-        ?callable $get_selected_attribute_html
-    ) {
-        $option_list_html = '';
-        foreach (
-            [
-                # The "(SELECT)" value is added
-                #   to be able to search
-                #   only by the task name
-                #   (then you do not change
-                #   this value, and it's
-                #   not getting matched with any
-                #   task status).
-                '(SELECT)',
-                '(NA)',
-                'PENDING',
-                'COMPLETED'
-            ]
-                as $option_value
-        ) {
-            $selected_attribute_html
-                = $get_selected_attribute_html
-                    !== null
-                    ? $get_selected_attribute_html(
-                        $option_value
-                    )
-                    : '';
-            $option_list_html
-                .= "<option {$selected_attribute_html}>{$option_value}</option>";
-        }
-
-        $id_attribute_html
-            = $status_select_id !== null
-                ? "id=\"$status_select_id\""
-                : '';
-
-        echo
-            "<select
-                {$id_attribute_html}
-                name=\"{$status_select_name}\"
-            >{$option_list_html}</select>";
-    }
-
-    function get_task_list_item_content_html (
-        $na_task_id,
-        $base_url,
-        $all_tasks_list,
-        $task_id,
-        $path_showing
-    ) {
-        $query
-            = http_build_query(
-                [
-                    'task-id' => $task_id
-                ]
-            );
-        $task_view_url = "{$base_url}?{$query}";
-        $task_view_url_html
-            = htmlspecialchars_with_ent_quotes(
-                $task_view_url
-            );
-
-        $task_status_html
-            = $task_id === $na_task_id
-                ? '(NA)'
-                : htmlspecialchars_with_ent_quotes(
-                    $all_tasks_list[$task_id]['status']
-                );
-
-        # Get the information whether any
-        #   of the child tasks of the task
-        #   is pending (recurse to the leaf
-        #   tasks).
-        $child_task_pending_information_html = '';
-        $pending_task_id_list
-            = [
-                $task_id
-            ];
-        while (
-            count($pending_task_id_list) !== 0
-        ) {
-            $p = array_pop($pending_task_id_list);
-
-            $child_task_id_list = [];
-            foreach (
-                $all_tasks_list as $pp => $details
-            ) {
-                # If "pp" is a child task of "p".
-                if (
-                    $details['parent-task-id']
-                        === $p
-                ) {
-                    if (
-                        $details['status']
-                            === 'PENDING'
-                    ) {
-                        $child_task_pending_information_html
-                            = '(CHILD TASK PENDING) ';
-                        break;
-                    }
-
-                    $child_task_id_list[] = $pp;
-                }
-            }
-            if (
-                $child_task_pending_information_html
-                    !== ''
-            ) {
-                break;
-            }
-            $pending_task_id_list
-                = [
-                    ...$pending_task_id_list,
-                    ...$child_task_id_list
-                ];
-        }
-
-        return
-            "({$task_status_html}) "
-            . $child_task_pending_information_html
-            . "<a href=\"{$task_view_url_html}\">"
-            . (
-                $path_showing
-                    ? get_task_path_html(
-                        $na_task_id,
-                        $task_id,
-                        $all_tasks_list
-                    )
-                    : htmlspecialchars_with_ent_quotes(
-                        $all_tasks_list[$task_id]['name']
-                    )
-            )
-            . '</a>';
-    }
-
-    function get_task_list_html (
-        $na_task_id,
-        $base_url,
-        # It is implicitly assumed
-        #   that the set of the tasks
-        #   in "task_list" is a subset of the set
-        #   of the tasks in the union
-        #   of "all_tasks_list" and an array
-        #   containing only task "(NA)".
-        $task_list,
-        $all_tasks_list,
-        $path_showing = true
-    ) {
-        $task_list_content_html = '';
-        foreach ($task_list as $task_id => $_) {
-            $task_list_item_content_html
-                = get_task_list_item_content_html(
-                    $na_task_id,
-                    $base_url,
-                    $all_tasks_list,
-                    $task_id,
-                    $path_showing
-                );
-            $task_list_content_html
-                .= "<li>{$task_list_item_content_html}</li>";
-        }
-        return "<ul>{$task_list_content_html}</ul>";
-    }
-
-    # This function has been created solely
-    #   to not have to remember
-    #   which calls of "htmlspecialchars()" refer
-    #   to user input (so to put the "ENT_QUOTES"
-    #   flag only there).
-    function htmlspecialchars_with_ent_quotes (
-        $string
-    ) {
-        return
-            htmlspecialchars($string, ENT_QUOTES);
-    }
-
-    function save_tasks (
-        $task_file_path,
-        $task_list
-    ) {
-        $line_list = [];
-        foreach (
-            $task_list
-                as $task_id => $task_details
-        ) {
-            $line
-                = implode(
-                    "\t",
-                    [
-                        $task_id,
-                        ...array_values(
-                            $task_details
-                        )
-                    ]
-                );
-            $line_list[] = $line;
-        }
-        file_put_contents(
-            $task_file_path,
-            implode("\n", $line_list)
-        );
-    }
-
-    # This function has been created to be
-    #   explicit about exiting, that is,
-    #   to not spread the fact that we are to exit
-    #   over loosely related lines of code.
-    function set_header (
-        $base_url,
-        $query_parameters = []
-    ) {
-        $location_url = $base_url;
-        if (count($query_parameters) !== 0) {
-            $query
-                = http_build_query(
-                    $query_parameters
-                );
-            $location_url .= "?{$query}";
-        }
-        header("Location: $location_url");
-    }
+    require_once
+        'functions/get-parent-task-select-html.php';
+    require_once
+        'functions/get-status-select-html.php';
+    require_once
+        'functions/get-task-list-html.php';
+    require_once
+        'functions/get-task-list-item-content-html.php';
+    require_once
+        'functions/get-task-path-html.php';
+    require_once
+        'functions/htmlspecialchars-with-ent-quotes.php';
+    require_once
+        'functions/save-tasks.php';
+    require_once
+        'functions/set-header.php';
 
     $configuration = require_once 'config.php';
     $base_url = "http://{$_SERVER['HTTP_HOST']}";
@@ -1150,7 +914,6 @@
         >PARENT TASK</label>
         <br>
         <?php
-            require_once 'functions/get-parent-task-select-html.php';
             echo
                 get_parent_task_select_html(
                     $na_task_id,
