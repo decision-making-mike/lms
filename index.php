@@ -1149,61 +1149,19 @@
             for="new-task-parent-task-id"
         >PARENT TASK</label>
         <br>
-        <select
-            id="new-task-parent-task-id"
-            name="new-task-parent-task-id"
-        >
-            <?php
-                $html = '';
-                foreach (
-                    [
-                        $na_task_id => null
-                    ]
-                        + $all_tasks_list
-                        as $task_id => $_
-                ) {
-                    $id_of_parent_task_to_select
-                        = isset($_GET['task-id'])
-                            # Modification case.
-                            ? $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
-                            # Addition case.
-                            : (int)$_GET['new-task-parent-task-id'];
-                    $list[$task_id]
-                        = get_task_path_html(
-                            $na_task_id,
-                            $task_id,
-                            $all_tasks_list
-                        );
-                }
-                asort(
-                    $list,
-                    SORT_NATURAL
-                        | SORT_FLAG_CASE
+        <?php
+            require 'functions/get-parent-task-select-html.php';
+            echo
+                get_parent_task_select_html(
+                    $na_task_id,
+                    $all_tasks_list,
+                    isset($_GET['task-id'])
+                        # Modification case.
+                        ? $all_tasks_list[(int)$_GET['task-id']]['parent-task-id']
+                        # Addition case.
+                        : (int)$_GET['new-task-parent-task-id']
                 );
-                foreach (
-                    $list
-                        as $new_task_parent_task_id
-                            => $new_task_parent_task_path_html
-                ) {
-                    $html
-                        .= '<option value="'
-                            . htmlspecialchars_with_ent_quotes(
-                                $new_task_parent_task_id
-                            )
-                            . '"'
-                            . (
-                                $new_task_parent_task_id
-                                    === $id_of_parent_task_to_select
-                                    ? ' selected'
-                                    : ''
-                            )
-                            . '>'
-                            . $new_task_parent_task_path_html
-                            . '</option>';
-                }
-                echo $html;
-            ?>
-        </select>
+        ?>
         <br>
         <label
             for="new-task-status"
