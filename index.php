@@ -1150,7 +1150,7 @@
         >PARENT TASK</label>
         <br>
         <?php
-            require 'functions/get-parent-task-select-html.php';
+            require_once 'functions/get-parent-task-select-html.php';
             echo
                 get_parent_task_select_html(
                     $na_task_id,
