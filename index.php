@@ -104,11 +104,17 @@
             ) {
                 $all_tasks_list[$task_details['id']]
                     = [
-                        'name' => $task_name,
+                        'name' =>
+                            !isset($tmp[$task_details['parent-task-name']])
+                                ?
+                                    $task_name
+                                        . " (missing parent task: \"{$task_details['parent-task-name']}\")"
+                                : $task_name,
                         'parent-task-id'
                             => (
                                 $task_details['parent-task-name']
                                     === '(NA)'
+                                    || !isset($tmp[$task_details['parent-task-name']])
                                     ? ((int)$na_task_id)
                                     : ((int)$tmp[$task_details['parent-task-name']]['id'])
                             ),
