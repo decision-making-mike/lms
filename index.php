@@ -502,26 +502,36 @@
             } else {
                 # This is a third-or-lower-level
                 #   task.
-                $query
-                    = http_build_query(
-                        [
-                            'task-id'
-                                => $parent_task_id
-                        ]
-                    );
-                $url = "{$base_url}?{$query}";
-                $label
-                    = $all_tasks_list[$parent_task_id]['name'];
-                echo
-                    "<a href=\""
-                        . htmlspecialchars_with_ent_quotes(
-                            $url
-                        )
-                        . "\">"
-                        . htmlspecialchars_with_ent_quotes(
-                            $label
-                        )
-                        . "</a>";
+                if (
+                    !isset(
+                        $all_tasks_list[$parent_task_id]
+                    )
+                ) {
+                    # The parent task of this task
+                    #   doesn't exist.
+                    echo "({$parent_task_id})";
+                } else {
+                    $query
+                        = http_build_query(
+                            [
+                                'task-id'
+                                    => $parent_task_id
+                            ]
+                        );
+                    $url = "{$base_url}?{$query}";
+                    $label
+                        = $all_tasks_list[$parent_task_id]['name'];
+                    echo
+                        "<a href=\""
+                            . htmlspecialchars_with_ent_quotes(
+                                $url
+                            )
+                            . "\">"
+                            . htmlspecialchars_with_ent_quotes(
+                                $label
+                            )
+                            . "</a>";
+                }
             }
         } else {
             # This is task "(NA)" (the only
